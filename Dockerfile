@@ -1,11 +1,13 @@
-FROM tiredofit//ruby:2.3-1.0-debian
-MAINTAINER Dave Conroy <daveconroy@selfdesign.org>
+FROM registry.selfdesign.org/docker/alpine:edge
+MAINTAINER Dave Conroy <dave at tiredofit dot ca>
 
 ### Environment Variables
    ENV DISCOURSE_VERSION=1.8.4 \
        RAILS_ENV=production \
        RUBY_GC_MALLOC_LIMIT=90000000 \
        RUBY_GLOBAL_METHOD_CACHE_SIZE=131072 \
+       LIBV8_MAJOR=5.3.332.38 \
+       LIBV8_VERSION=5.3.332.38.5-x86_64-linux \
        DISCOURSE_DB_HOST=postgres \
        DISCOURSE_REDIS_HOST=redis \
        DISCOURSE_SERVE_STATIC_ASSETS=true
@@ -14,75 +16,88 @@ MAINTAINER Dave Conroy <daveconroy@selfdesign.org>
    WORKDIR /app
 
 ### Install Dependencies
-   RUN echo 'deb http://apt.postgresql.org/pub/repos/apt/ jessie-pgdg main' >>/etc/apt/sources.list && \
-       curl https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - && \
-       apt-get update && \
-       apt-get install -y --no-install-recommends \
-   		    autoconf \
- 		    build-essential \
+   RUN apk update && \
+       apk add --no-cache \
+   		  autoconf \
+ 		    build-base \
 		    ghostscript \
 		    gifsicle \
 		    git \
-		    gsfonts \
+		    ghostscript-fonts \
 		    imagemagick \
-		    jhead \
 		    jpegoptim \
-		    libbz2-dev \
-		    libfreetype6-dev \
-		    libjpeg-dev \
-		    libjpeg-turbo-progs \
-		    libpq-dev \
-		    libtiff-dev \
+		    libbz2 \
+		    libffi-dev \
+		    libjpeg \
+		    libpq \
 		    libxslt-dev \
 		    libxml2 \
 		    libxml2-dev \
+		    linux-headers \
 		    nodejs \
-		    npm \
+		    nodejs-npm \
 		    optipng \
-		    pkg-config \
+		    pkgconfig \
 		    postgresql-client \
 		    pngquant \
+        python2 \
+        python2-dev \
+        ruby \
+        ruby-bundler \
+        ruby-dev \
 		    && \
 	    
-    ln --symbolic /usr/bin/nodejs /usr/bin/node && \
+    #ln --symbolic /usr/bin/nodejs /usr/bin/node && \
     npm install --global \
         svgo \
-        uglify-js@2.8.27 && \
-    rm -rf /var/lib/apt/lists/* && \
+        uglify-js@2.8.27 
+    
+    # install libv8
+RUN    mkdir -p /usr/src && \
+    cd /usr/src && \
+    git clone --recursive git://github.com/cowboyd/libv8.git && \
+    cd libv8 && \
+    sed -i -e 's/Gem::Platform::RUBY/Gem::Platform.local/' libv8.gemspec && \
+    gem build libv8.gemspec && \
+    export GYP_DEFINES="$GYP_DEFINES linux_use_bundled_binutils=0 linux_use_bundled_gold=0"
+
+RUN    gem install --verbose libv8-$LIBV8_VERSION.gem && \
+    cd /usr/local/bundle/gems/libv8-$LIBV8_VERSION/vendor/ && \
+    mkdir -p /tmp/v8 && \
+    mv ./v8/out /tmp/v8/ && \
+    mv ./v8/include /tmp/v8 && \
+    rm -rf ./v8 ./depot_tools && \
+    mv /tmp/v8 .
+    #bundle install && \
+    #bundle exec rake compile && \
 
 ### Download Discourse
-        curl -sfSL https://github.com/discourse/discourse/archive/v${DISCOURSE_VERSION}.tar.gz | tar -zx --strip-components=1 -C /app && \
-
-
-### Install Discourse
-        cd /app && \
-	bundle config build.nokogiri --use-system-libraries && \
-    	bundle install --deployment --without test --without development 
+   RUN curl -sfSL https://github.com/discourse/discourse/archive/v${DISCOURSE_VERSION}.tar.gz | tar -zx --strip-components=1 -C /app && \
 
 ### Install Plugins    
-    RUN cd /app/plugins && \
-        ## Remove Nginx Performance Plugin
-        rm -rf /app/plugins/discourse-nginx-performance-report && \
-
+        cd /app/plugins && \
         ## SQL Query Explorer 
-        git clone https://github.com/discourse/discourse-data-explorer.git /app/plugins/sql-explorer && \ 
+        git clone https://github.com/discourse/discourse-data-explorer.git && \ 
         ## Allow Accepted Answers on Topics
-        git clone https://github.com/discourse/discourse-solved /app/plugins/solved && \ 
+        git clone https://github.com/discourse/discourse-solved && \ 
         ## Adds the ability for voting on a topic in category
-        git clone https://github.com/discourse/discourse-voting.git /app/plugins/voting && \ 
+        git clone https://github.com/discourse/discourse-voting.git && \ 
+        ## LDAP Plugin
+        #git clone https://github.com/jonmbake/discourse-ldap-auth && \
+        ## SAML Plugin
+        #git clone https://github.com/discourse/discourse-saml && \
         cd /app && \
 
-### Cleanup
-    	#apt-get purge -y build-essential && \
-    	apt-get clean && \
-	apt-get autoremove -y && \
-        rm -rf /app/vendor/bundle/ruby/2.3.0/cache/* /tmp/* /usr/src/*
-        
+### Install Discourse
+  	bundle config build.nokogiri --use-system-libraries && \
+    bundle install --deployment --without test --without development 
+    
+#        rm -rf /root/.npm /app/vendor/bundle/ruby/2.3.0/cache/* /tmp/* /usr/src/*
 
 ### Add Logrotate
    ADD install/logrotate.d /etc/logrotate.d
 
-### S6 Overlay
+### S6
    ADD install/s6 /etc/s6
 
 ### Networking Configuration

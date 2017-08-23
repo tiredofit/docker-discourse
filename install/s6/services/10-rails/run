@@ -1,0 +1,21 @@
+#!/usr/bin/with-contenv bash
+
+
+if [ ! -f /tmp/state/10-rails ]; then
+sleep 2
+
+    sed -i -e "s/APP_ROOT = '\/home\/discourse\/discourse'/APP_ROOT = '\/app'/g" /app/config/puma.rb
+    sed -i -e "s/daemonize true/daemonize false/g" /app/config/puma.rb
+
+    rake db:migrate assets:precompile
+
+    mkdir -p /tmp/state/
+	echo 'Initialization Complete' >/tmp/state/10-rails
+fi
+
+cd /app/
+echo ''
+echo '** Starting Discourse..'
+exec bundle exec rails server -b 0.0.0.0
+
+

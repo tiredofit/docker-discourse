@@ -1,0 +1,60 @@
+version: '2'
+
+services:
+  discourse-app:
+    container_name: discourse-app
+    image: tiredofit/discourse:latest
+    volumes:
+      - ./logs:/app/log
+      - ./uploads:/app/public/uploads
+      - ./backups:/app/public/backups 
+    environment: 
+      - VIRTUAL_HOST=discourse.hostname.com
+      - VIRTUAL_NETWORK=nginx-proxy
+      - VIRTUAL_PORT=3000
+      - LETSENCRYPT_HOST=discourse.hostname.com
+      - LETSENCRYPT_EMAIL=discourse@hostname.com
+
+      - ZABBIX_HOSTNAME=discourse-app
+      
+      - DISCOURSE_DB_HOST=discourse-db
+      - DISCOURSE_DB_PASSWORD=password
+      - DISCOURSE_REDIS_HOST=discourse-redis
+      - DISCOURSE_HOSTNAME=forum.your.org
+      - DISCOURSE_SMTP_ADDRESS=postfix-relay
+      - DISCOURSE_SMTP_PORT='25'
+      #- DISCOURSE_SMTP_USER_NAME=smtpuser
+      #- DISCOURSE_SMTP_PASSWORD=password
+      - DISCOURSE_DEVELOPER_EMAILS=hostmaster@your.domain
+    restart: always
+    networks:
+      - proxy-tier
+
+  discourse-db:
+    container_name: discourse-db
+    image: tiredofit/postgres:latest
+    restart: always
+    volumes:
+      - ./db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=discourse
+      - POSTGRES_USER=discourse
+      - POSTGRES_PASSWORD=password
+    networks:
+      - proxy-tier
+
+  discourse-redis:
+    container_name: discourse-redis
+    image: tiredofit/redis:latest
+    restart: always
+    volumes:
+      - ./redis:/var/lib/redis
+    networks:
+      - proxy-tier
+
+networks:
+  proxy-tier:
+    external:
+      name: nginx-proxy
+
+

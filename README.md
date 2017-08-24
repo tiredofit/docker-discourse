@@ -89,7 +89,7 @@ that can be used to customize your installation.
 | `DISCOURSE_HOSTNAME`= | The URL of your Public Discourse Installation e.g. `discourse.example.org` |
 | `DISCOURSE_SMTP_ADDRESS` | The hostname of your external SMTP server e.g. `postfix-relay` |
 | `DISCOURSE_SMTP_PORT` | The port that SMTP listens on e.g. `25` |
-| `DISCOURSE_SMTP_USER_NAME` Optional - Username for SMTP Authentication e.g. `smtpuser` |
+| `DISCOURSE_SMTP_USER_NAME` | Optional - Username for SMTP Authentication e.g. `smtpuser` |
 | `DISCOURSE_SMTP_PASSWORD` | Optional - Password for SMTP Authentication e.g. `password` |
 | `DISCOURSE_DEVELOPER_EMAILS` | The administrative email which the first account will be created with e.g. `admin@example.com` |
 

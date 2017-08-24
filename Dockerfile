@@ -1,4 +1,4 @@
-FROM tiredofit/ruby:2.3-1.0-debian
+FROM tiredofit/ruby:2.3-debian
 MAINTAINER Dave Conroy <dave at tiredofit dot ca>
 
 ### Environment Variables

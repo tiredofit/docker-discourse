@@ -4,8 +4,9 @@
 
 Dockerfile to build a [Discourse](https://www.discourse.org) container image.
 
-* This Container uses Debian as a base which includes [s6 overlay](https://github.com/just-containers/s6-overlay) enabled for PID 1 Init capabilities, [zabbix-agent](https://zabbix.org) based on TRUNK compiled for individual container monitoring, Cron also installed along with other tools (bash,curl, less, logrotate, mariadb-client, nano, vim) for easier management.
-* Unlike the official Discourse image, this is meant to be self contained without requiring a base image.
+* This Container uses Debian as a base which includes [s6 
+overlay](https://github.com/just-containers/s6-overlay) enabled for PID 1 Init capabilities, [zabbix-agent](https://zabbix.org) based on TRUNK compiled for individual container monitoring, Cron also installed along with other tools (bash,curl, less, logrotate, nano, updated postgres-client, vim) for easier management.
+* Unlike the official Discourse image, this is meant to be self contained without requiring a base image or use the `launcher`
 * Nginx performance report removed, SQL Query, Voting and Solved Plugins installed.
 
 [Changelog](CHANGELOG.md)

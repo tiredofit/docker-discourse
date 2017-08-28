@@ -77,13 +77,11 @@ Edit the environment variables to point to a working Postgres Server with the ap
 
 ### Environment Variables
 
-Along with the Environment Variables from the Base image, below is the complete list of available options 
-that can be used to customize your installation.
+Along with the Environment Variables from the [Base image](https://hub.docker.com/r/tiredofit/alpine), below is the complete list of available options that can be used to customize your installation.
 
 
 | Parameter | Description |
 |-----------|-------------|
-| `ZABBIX_HOSTNAME` | Hostname of container to report to Zabbix | 
 | `DISCOURSE_DB_HOST` | Your Postgres DB Host e.g. `discuss-db` |
 | `DISCOURSE_DB_PASSWORD` | The password for the discourse db e.g. `password` |
 | `DISCOURSE_REDIS_HOST` | External Redis Host e.g. `discuss-redis` |

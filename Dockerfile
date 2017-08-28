@@ -79,11 +79,8 @@ MAINTAINER Dave Conroy <dave at tiredofit dot ca>
         rm -rf /app/vendor/bundle/ruby/2.3.0/cache/* /tmp/* /usr/src/*
         
 
-### Add Logrotate
-   ADD install/logrotate.d /etc/logrotate.d
-
-### S6 Overlay
-   ADD install/s6 /etc/s6
+### Files Addition
+  ADD install /
 
 ### Networking Configuration
    EXPOSE 3000

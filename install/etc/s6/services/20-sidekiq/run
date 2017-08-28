@@ -1,5 +1,9 @@
 #!/usr/bin/with-contenv bash
 
+while [ ! -f /tmp/state/10-* ]
+do
+  sleep 1
+done
 
 if [ ! -f /tmp/state/20-sidekiq ]; then
 sleep 2

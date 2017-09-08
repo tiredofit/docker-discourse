@@ -1,5 +1,5 @@
 FROM tiredofit/ruby:2.3-debian
-MAINTAINER Dave Conroy <dave at tiredofit dot ca>
+LABEL maintainer="Dave Conroy (dave at tiredofit dot ca)"
 
 ### Environment Variables
    ENV DISCOURSE_VERSION=1.8.4 \

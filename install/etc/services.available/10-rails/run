@@ -1,0 +1,12 @@
+#!/usr/bin/with-contenv bash
+
+source /assets/functions/00-container
+prepare_service
+PROCESS_NAME="rails"
+
+check_container_initialized
+liftoff
+
+cd /app/
+print_info "Starting Rails - Discourse version ${DISCOURSE_VERSION}"
+bundle exec rails server -b 0.0.0.0

@@ -1,0 +1,15 @@
+#!/usr/bin/with-contenv bash
+
+source /assets/functions/00-container
+prepare_service
+PROCESS_NAME="discourse"
+
+cd /app
+
+sed -i -e "s/APP_ROOT = '\/home\/discourse\/discourse'/APP_ROOT = '\/app'/g" /app/config/puma.rb
+sed -i -e "s/daemonize true/daemonize false/g" /app/config/puma.rb
+
+export BUNDLER_VERSION=2.0.2
+rake db:migrate assets:precompile
+
+liftoff

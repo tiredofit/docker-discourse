@@ -1,0 +1,13 @@
+#!/usr/bin/with-contenv bash
+
+source /assets/functions/00-container
+prepare_service
+PROCESS_NAME="sidekiq"
+
+check_container_initialized
+check_service_initialized 10-rails
+liftoff
+
+print_info "Starting Sidekiq"
+cd /app/
+bundle exec sidekiq -e production > log/sidekiq.log

@@ -4,23 +4,22 @@ services:
   discourse-app:
     container_name: discourse-app
     image: tiredofit/discourse:latest
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.discuss-selfdesign-org.rule=Host(`discourse.example.com`)
+      - traefik.http.services.discuss-selfdesign-org.loadbalancer.server.port=3000
     volumes:
       - ./logs:/app/log
       - ./uploads:/app/public/uploads
       - ./backups:/app/public/backups 
     environment: 
-      - VIRTUAL_HOST=discourse.hostname.com
-      - VIRTUAL_NETWORK=nginx-proxy
-      - VIRTUAL_PORT=3000
-      - LETSENCRYPT_HOST=discourse.hostname.com
-      - LETSENCRYPT_EMAIL=discourse@hostname.com
-
+      - TIMEZONE=America/Vancouver
       - ZABBIX_HOSTNAME=discourse-app
       
       - DISCOURSE_DB_HOST=discourse-db
       - DISCOURSE_DB_PASSWORD=password
       - DISCOURSE_REDIS_HOST=discourse-redis
-      - DISCOURSE_HOSTNAME=forum.your.org
+      - DISCOURSE_HOSTNAME=discourse.example.com
       - DISCOURSE_SMTP_ADDRESS=postfix-relay
       - DISCOURSE_SMTP_PORT='25'
       #- DISCOURSE_SMTP_USER_NAME=smtpuser
@@ -28,7 +27,8 @@ services:
       - DISCOURSE_DEVELOPER_EMAILS=hostmaster@your.domain
     restart: always
     networks:
-      - proxy-tier
+      - proxy
+      - services
 
   discourse-db:
     container_name: discourse-db
@@ -37,24 +37,53 @@ services:
     volumes:
       - ./db:/var/lib/postgresql/data
     environment:
+      - TIMEZONE=America/Vancouver
       - POSTGRES_DB=discourse
       - POSTGRES_USER=discourse
       - POSTGRES_PASSWORD=password
     networks:
-      - proxy-tier
+      - services
 
-  discourse-redis:
-    container_name: discourse-redis
-    image: tiredofit/redis:latest
+  discourse-db-backup:
+    image: tiredofit/db-backup
+    container_name: discourse-db-backup
+    links:
+     - discourse-db
+    volumes:
+      - ./dbbackup:/backup
+    environment:
+      - TIMEZONE=America/Vancouver
+      - ZABBIX_HOSTNAME=discourse-db-backup
+      - DB_HOST=discourse-db
+      - DB_TYPE=postgres
+      - DB_NAME=discourse
+      - DB_USER=discourse
+      - DB_PASS=password
+      - DB_DUMP_FREQ=1440
+      - DB_DUMP_BEGIN=0000
+      - DB_CLEANUP_TIME=8640
+      - COMPRESSION=BZ
+      - MD5=TRUE
+    networks:
+      - services
     restart: always
+
+  discuss-redis:
+    image: tiredofit/redis:latest
+    container_name: discuss-selfdesign-org-redis
     volumes:
       - ./redis:/var/lib/redis
+    environment:
+      - TIMEZONE=America/Vancouver
+      - ZABBIX_HOSTNAME=discuss-redis
     networks:
-      - proxy-tier
+      - services
+    restart: always
 
 networks:
-  proxy-tier:
-    external:
-      name: nginx-proxy
+  proxy:
+    external: true
+  services:
+    external: true
 
 

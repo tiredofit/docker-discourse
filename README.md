@@ -1,6 +1,6 @@
-# hub.docker.com/r/tiredofit/discourse
+# github.com/tiredofit/docker-discourse
 
-## Introduction
+## About
 
 Dockerfile to build a [Discourse](https://www.discourse.org) container image.
 
@@ -11,7 +11,7 @@ overlay](https://github.com/just-containers/s6-overlay) enabled for PID 1 Init c
 
 [Changelog](CHANGELOG.md)
 
-## Authors
+## Maintainer
 
 - [Dave Conroy](http://github/tiredofit/)
 
@@ -33,9 +33,9 @@ overlay](https://github.com/just-containers/s6-overlay) enabled for PID 1 Init c
   - [Creating User account](#creating-user-account)
 - [References](#references)
 
-## Prerequisites
+## Prerequisites and Assumptions
 
-This image assumes that you are using a reverse proxy such as [jwilder/nginx-proxy](https://github.com/jwilder/nginx-proxy) and optionally the [Let's Encrypt Proxy Companion @ https://github.com/JrCs/docker-letsencrypt-nginx-proxy-companion](https://github.com/JrCs/docker-letsencrypt-nginx-proxy-companion) in order to serve your pages. However, it will run just fine on it's own if you map appropriate ports.
+This image assumes that you are using a reverse proxy such as [jwilder/nginx-proxy](https://github.com/jwilder/nginx-proxy) or [traefik](https://github.com/traefik/traefik).
 
 You will also require an external Redis container, along with an external Postgres DB container, as well an an external SMTP server.
 
@@ -63,7 +63,7 @@ The following image tags are available:
 
 ## Configuration
 
-### Data-Volumes
+### Persistent Storage
 
 The container operates heavily from the `/app` folder, however there are a few folders that should be persistently mapped to ensure data persistence. The following directories are used for configuration and can be mapped for persistent storage.
 

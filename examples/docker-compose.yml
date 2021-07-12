@@ -6,8 +6,8 @@ services:
     image: tiredofit/discourse:latest
     labels:
       - traefik.enable=true
-      - traefik.http.routers.discuss-selfdesign-org.rule=Host(`discourse.example.com`)
-      - traefik.http.services.discuss-selfdesign-org.loadbalancer.server.port=3000
+      - traefik.http.routers.discourse-example-org.rule=Host(`discourse.example.com`)
+      - traefik.http.services.discourse-example-org.loadbalancer.server.port=3000
     volumes:
       - ./logs:/app/log
       - ./uploads:/app/public/uploads
@@ -70,7 +70,7 @@ services:
 
   discuss-redis:
     image: tiredofit/redis:latest
-    container_name: discuss-selfdesign-org-redis
+    container_name: discourse-example-org-redis
     volumes:
       - ./redis:/var/lib/redis
     environment:

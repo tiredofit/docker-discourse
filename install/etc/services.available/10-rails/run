@@ -8,5 +8,5 @@ check_container_initialized
 liftoff
 
 cd /app/
-print_info "Starting Rails - Discourse version ${DISCOURSE_VERSION}"
+print_start "Starting Rails - Discourse version ${DISCOURSE_VERSION}"
 bundle exec rails server -b 0.0.0.0

@@ -8,6 +8,6 @@ check_container_initialized
 check_service_initialized 10-rails
 liftoff
 
-print_info "Starting Sidekiq"
+print_start "Starting Sidekiq"
 cd /app/
 bundle exec sidekiq -e production > log/sidekiq.log

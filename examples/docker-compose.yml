@@ -14,7 +14,7 @@ services:
       - ./backups:/app/public/backups 
     environment: 
       - TIMEZONE=America/Vancouver
-      - ZABBIX_HOSTNAME=discourse-app
+      - CONTAINER_NAME=discourse-app
       
       - DISCOURSE_DB_HOST=discourse-db
       - DISCOURSE_DB_PASSWORD=password
@@ -53,7 +53,7 @@ services:
       - ./dbbackup:/backup
     environment:
       - TIMEZONE=America/Vancouver
-      - ZABBIX_HOSTNAME=discourse-db-backup
+      - CONTAINER_NAME=discourse-db-backup
       - DB_HOST=discourse-db
       - DB_TYPE=postgres
       - DB_NAME=discourse
@@ -75,7 +75,7 @@ services:
       - ./redis:/var/lib/redis
     environment:
       - TIMEZONE=America/Vancouver
-      - ZABBIX_HOSTNAME=discuss-redis
+      - CONTAINER_NAME=discuss-redis
     networks:
       - services
     restart: always

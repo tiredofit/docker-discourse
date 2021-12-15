@@ -1,8 +1,8 @@
-FROM tiredofit/ruby:2.6-debian
+FROM docker.io/tiredofit/ruby:2.6-debian
 LABEL maintainer="Dave Conroy (github.com/tiredofit)"
 
 ### Environment Variables
-ENV DISCOURSE_VERSION=2.6.0.beta1 \
+ENV DISCOURSE_VERSION=2.7.11 \
     BUNDLER_VERSION=2.0.2 \
     RAILS_ENV=production \
     RUBY_GC_MALLOC_LIMIT=90000000 \
@@ -16,9 +16,9 @@ WORKDIR /app
 
 ### Install Dependencies
 RUN set -x && \
-    echo "deb http://apt.postgresql.org/pub/repos/apt/ stretch-pgdg main" >>/etc/apt/sources.list && \
+    echo "deb http://apt.postgresql.org/pub/repos/apt/ buster-pgdg main" >>/etc/apt/sources.list && \
     curl https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - && \
-    curl --silent --location https://deb.nodesource.com/setup_12.x | bash - && \
+    curl --silent --location https://deb.nodesource.com/setup_14.x | bash - && \
     apt-get install -y --no-install-recommends \
         advancecomp \
         autoconf \

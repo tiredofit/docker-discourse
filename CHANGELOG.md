@@ -1,3 +1,9 @@
+## 3.0.1 2022-12-16 <dave at tiredofit dot ca>
+
+   ### Changed
+      - Remove directories that are not necessary to reduce image size
+
+
 ## 3.0.0 2022-12-15 <dave at tiredofit dot ca>
 
 This has breaking changes all over the image, specifically related to paths and environment variables. Please read the README.md carefully and view examples and port over accordingly.

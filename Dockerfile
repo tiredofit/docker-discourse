@@ -153,6 +153,13 @@ RUN source /assets/functions/00-container && \
     package remove ${BUILD_DEPS} && \
     package cleanup && \
     rm -rf \
+        /app/.devcontainer \
+        /app/.editorconfig \
+        /app/.github \
+        /app/.*ignore \
+        /app/.prettier* \
+        /app/.vscode-sample \
+        /app/bin/docker \
         /app/Brewfile \
         /app/CONTRIBUTING.md \
         /app/d \
@@ -161,7 +168,7 @@ RUN source /assets/functions/00-container && \
         /app/lefthook.yml \
         /app/test \
         /app/translator.yml \
-        /app/vendor/bundle/ruby/2.7.0/cache/* \
+        /app/vendor/bundle/ruby/${RUBY_VERSION:0:3}/cache/* \
         /root/.bundle \
         /root/.config \
         /root/.local \

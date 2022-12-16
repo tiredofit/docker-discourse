@@ -1,3 +1,23 @@
+## 3.0.0 2022-12-15 <dave at tiredofit dot ca>
+
+This has breaking changes all over the image, specifically related to paths and environment variables. Please read the README.md carefully and view examples and port over accordingly.
+
+   ### Added
+      - Discourse 2.8.13
+      - Debian Bullseye
+      - Ruby 3.0.5 compiled w/ JemAlloc
+      - Node 16
+      - Added new image optimization packages
+      - Postgresql 15 Support
+      - Rewrote initialization routines and configured configurable paths for uploads, backups, plugins, logs
+      - Logrotate routines for all logs
+      - Switchable environment variables for plugins
+      - New plugins added: Footnote, Formatting Toolbar, Mermaid, Post Voting, Spoiler Alert
+
+   ### Changed
+      - Reworked all environment variables, now use standard variables for those used to other tiredofit images
+
+
 ## 2.5.1 2021-12-15 <dave at tiredofit dot ca>
 
    ### Added

@@ -1,5 +1,4 @@
-version: '2'
-
+version: '2.4'
 services:
   discourse-app:
     container_name: discourse-app
@@ -9,22 +8,25 @@ services:
       - traefik.http.routers.discourse-example-org.rule=Host(`discourse.example.com`)
       - traefik.http.services.discourse-example-org.loadbalancer.server.port=3000
     volumes:
-      - ./logs:/app/log
-      - ./uploads:/app/public/uploads
-      - ./backups:/app/public/backups 
-    environment: 
+      - ./logs:/data/logs
+      - ./data/uploads:/data/uploads
+      - ./data/backups:/data/backups
+    environment:
       - TIMEZONE=America/Vancouver
       - CONTAINER_NAME=discourse-app
-      
-      - DISCOURSE_DB_HOST=discourse-db
-      - DISCOURSE_DB_PASSWORD=password
-      - DISCOURSE_REDIS_HOST=discourse-redis
-      - DISCOURSE_HOSTNAME=discourse.example.com
-      - DISCOURSE_SMTP_ADDRESS=postfix-relay
-      - DISCOURSE_SMTP_PORT='25'
-      #- DISCOURSE_SMTP_USER_NAME=smtpuser
-      #- DISCOURSE_SMTP_PASSWORD=password
-      - DISCOURSE_DEVELOPER_EMAILS=hostmaster@your.domain
+
+      - DB_HOST=discourse-db
+      - DB_NAME=discourse
+      - DB_USER=discourse
+      - DB_PASS=password
+
+      - REDIS_HOST=discourse-redis
+      - SITE_HOSTNAME=discourse.example.com
+
+      - SMTP_PORT=25
+      - SMTP_HOST=postfix-relay
+
+      - DEVELOPER_EMAILS=hostmaster@example.com
     restart: always
     networks:
       - proxy
@@ -32,23 +34,35 @@ services:
 
   discourse-db:
     container_name: discourse-db
-    image: tiredofit/postgres:latest
+    image: tiredofit/postgres:15-latest
     restart: always
     volumes:
       - ./db:/var/lib/postgresql/data
     environment:
       - TIMEZONE=America/Vancouver
+      - CONTAINER_NAME=discourse-db
+
       - POSTGRES_DB=discourse
       - POSTGRES_USER=discourse
       - POSTGRES_PASSWORD=password
     networks:
       - services
 
+  discourse-redis:
+    image: tiredofit/redis:7
+    container_name: discourse-example-org-redis
+    volumes:
+      - ./redis:/var/lib/redis
+    environment:
+      - TIMEZONE=America/Vancouver
+      - CONTAINER_NAME=discourse-redis
+    networks:
+      - services
+    restart: always
+
   discourse-db-backup:
     image: tiredofit/db-backup
     container_name: discourse-db-backup
-    links:
-     - discourse-db
     volumes:
       - ./dbbackup:/backup
     environment:
@@ -62,28 +76,14 @@ services:
       - DB_DUMP_FREQ=1440
       - DB_DUMP_BEGIN=0000
       - DB_CLEANUP_TIME=8640
-      - COMPRESSION=BZ
-      - MD5=TRUE
     networks:
       - services
     restart: always
 
-  discuss-redis:
-    image: tiredofit/redis:latest
-    container_name: discourse-example-org-redis
-    volumes:
-      - ./redis:/var/lib/redis
-    environment:
-      - TIMEZONE=America/Vancouver
-      - CONTAINER_NAME=discuss-redis
-    networks:
-      - services
-    restart: always
 
 networks:
   proxy:
     external: true
   services:
     external: true
-
 

@@ -1,0 +1,459 @@
+#!/usr/bin/with-contenv bash
+
+bootstrap_filesystem() {
+    if [ ! -d "${DATA_PATH}" ]; then
+        mkdir -p "${DATA_PATH}"
+    fi
+    if [ $(stat -c %U "${DATA_PATH}") != "discourse" ] ; then chown discourse:discourse "${DATA_PATH}" ; fi
+
+    if [ ! -d "${BACKUP_PATH}" ]; then
+        mkdir -p "${BACKUP_PATH}"
+    fi
+    if [ "${BACKUP_PATH}" != "/app/public/backups/" ] ; then
+        rm -rf /app/public/backups
+        ln -sf "${BACKUP_PATH}" /app/public/backups
+    fi
+    if [ $(stat -c %U "${BACKUP_PATH}") != "discourse" ] ; then chown discourse:discourse "${BACKUP_PATH}" ; fi
+
+    if [ ! -d "${LOG_PATH}" ] ; then
+       mkdir -p "${LOG_PATH}"
+    fi
+
+    if [ "${LOG_PATH}" != "/app/log/" ] ; then
+        rm -rf /app/log
+        ln -sf "${LOG_PATH}" /app/log
+    fi
+    create_logrotate discourse "${LOG_PATH}"/${LOG_FILE} discourse discourse
+    create_logrotate discourse_puma "${LOG_PATH}"/${PUMA_LOG_FILE} discourse discourse
+    create_logrotate discourse_puma_error "${LOG_PATH}"/${PUMA_LOG_FILE_ERROR} discourse discourse
+    create_logrotate discourse_sidekiq "${LOG_PATH}"/${SIDEKIQ_LOG_FILE} discourse discourse
+
+    if [ ! -d "${PLUGIN_PATH}" ]; then
+        mkdir -p "${PLUGIN_PATH}"
+    fi
+    if [ "${PLUGIN_PATH}" != "/app/plugins/" ] ; then
+        rm -rf /app/plugins
+        ln -sf "${PLUGIN_PATH}" /app/public/uploads
+    fi
+    if [ $(stat -c %U "${PLUGIN_PATH}") != "discourse" ] ; then chown discourse:discourse "${PLUGIN_PATH}" ; fi
+
+    if [ ! -d "${UPLOADS_PATH}" ]; then
+        mkdir -p "${UPLOADS_PATH}"
+    fi
+    if [ "${UPLOADS_PATH}" != "/app/public/uploads/" ] ; then
+        rm -rf /app/public/uploads
+        ln -sf "${UPLOADS_PATH}" /app/public/uploads
+    fi
+    if [ $(stat -c %U "${UPLOADS_PATH}") != "discourse" ] ; then chown discourse:discourse "${UPLOADS_PATH}" ; fi
+}
+
+configure_discourse() {
+    sanity_db postgres
+    db_ready postgres
+    sanity_db redis
+    db_ready redis
+
+    cat <<EOF >> /app/config/discourse.conf
+## tiredofit/discourse Synapse Configuration
+## If you want to use your own configuration files set SETUP_TYPE=MANUAL when starting container
+## Last Generated on $(TZ=${TIMEZONE} date +'%Y-%m-%d %H:%M:%S %Z')
+
+## Site Details
+hostname = "${SITE_HOSTNAME}"
+enable_cors = ${ENABLE_CORS,,}
+cors_origin = '${CORS_ORIGIN}'
+serve_static_assets = ${SERVE_STATIC_ASSETS,,}
+relative_url_root = ${RELATIVE_URL_ROOT}
+developer_emails = ${DEVELOPER_EMAILS}
+
+
+## Database
+### PostgreSQL
+db_pool = ${DB_POOL}
+db_timeout = ${DB_TIMEOUT}
+db_connect_timeout = ${DB_TIMEOUT_CONNECT}
+db_host = ${DB_HOST}
+db_port = ${DB_PORT}
+db_name = ${DB_NAME}
+db_username = ${DB_USER}
+db_password = ${DB_PASS}
+db_prepared_statements = false
+db_advisory_locks = true
+
+### Redis
+redis_host = ${REDIS_HOST}
+redis_port = ${REDIS_PORT}
+redis_db = ${REDIS_DB}
+redis_password = ${REDIS_PASS}
+redis_skip_client_commands = ${REDIS_SKIP_CLIENT_COMMANDS,,}
+redis_use_ssl = ${REDIS_ENABLE_TLS,,}
+
+## SMTP
+smtp_address = ${SMTP_HOST}
+smtp_port = ${SMTP_PORT}
+smtp_domain = ${SMTP_DOMAIN}
+smtp_user_name = ${SMTP_USER}
+smtp_password = ${SMTP_PASS}
+smtp_authentication = ${SMTP_AUTHENTICATION,,}
+smtp_enable_start_tls = ${SMTP_START_TLS,,}
+smtp_openssl_verify_mode = ${SMTP_TLS_VERIFY,,}
+smtp_force_tls = ${SMTP_TLS_FORCE,,}
+smtp_open_timeout = 5
+smtp_read_timeout = 5
+
+### Profile
+load_mini_profiler = ${ENABLE_MINIPROFILER,,}
+
+#maxmind_backup_path = ${MAXMIND_DB_PATH}
+#maxmind_license_key = ${MAXMIND_LICENSE_KEY}
+
+#### NOT DEALING WITH THIS RIGHT NOW
+
+#### Every how many requests should MP profile a request (aka take snapshot)
+#### Default is never
+###mini_profiler_snapshots_period = 0
+###
+### specify the URL of the destination that MiniProfiler should ship snapshots to
+### mini_profiler_snapshots_transport_auth_key is required as well
+### mini_profiler_snapshots_transport_url =
+###
+### authorization key that will be included as a header in requests made by the
+### snapshots transporter to the URL specified above. The destination should
+### know this key and only accept requests that have this key in the
+### 'Mini-Profiler-Transport-Auth' header.
+### mini_profiler_snapshots_transport_auth_key =
+###
+
+### # recommended, cdn used to access assets
+### cdn_url =
+###
+### # The hostname used by the CDN to request assets
+### cdn_origin_hostname =
+###
+
+### # comma delimited list of emails that have developer level access
+### developer_emails =
+
+### # message bus redis server switch
+### message_bus_redis_enabled = false
+###
+### # message bus redis server address
+### message_bus_redis_host = localhost
+###
+### # message bus redis server port
+### message_bus_redis_port = 6379
+###
+### # message bus redis replica server address
+### message_bus_redis_replica_host =
+###
+### # message bus redis slave server port
+### message_bus_redis_replica_port = 6379
+###
+### # message bus redis database
+### message_bus_redis_db = 0
+###
+### # message bus redis password
+### message_bus_redis_password =
+###
+### # skip configuring client id for cloud providers who support no client commands
+### message_bus_redis_skip_client_commands = false
+###
+
+###
+### # number of sidekiq workers (launched via unicorn master)
+### sidekiq_workers = 5
+###
+### # connection reaping helps keep connection counts down, postgres
+### # will not work properly with huge numbers of open connections
+### # reap connections from pool that are older than 30 seconds
+### connection_reaper_age = 30
+###
+### # run reap check every 30 seconds
+### connection_reaper_interval = 30
+
+### # increasing this number will increase redis memory use
+### # this ensures backlog (ability of channels to catch up are capped)
+### # message bus default cap is 1000, we are winding it down to 100
+### message_bus_max_backlog_size = 100
+###
+### # how often the message-bus backlog should be cleared
+### # lower values will make memory usage more consistent, but will
+### # increase redis CPU demands
+### message_bus_clear_every = 50
+###
+### # must be a 64 byte hex string, anything else will be ignored with a warning
+### secret_key_base =
+
+### # fallback path for all assets which are served via the application
+### # used by static_controller
+### # in multi host setups this allows you to have old unicorn instances serve
+### # newly compiled assets
+### fallback_assets_path =
+###
+### # S3 settings used for serving ALL public files
+### # be sure to configure a CDN as well per cdn_url
+### s3_bucket =
+### s3_region =
+### s3_access_key_id =
+### s3_secret_access_key =
+### s3_use_iam_profile =
+### s3_cdn_url =
+### s3_endpoint =
+### s3_http_continue_timeout =
+### s3_install_cors_rule =
+###
+### # Optionally, specify a separate CDN to be used for static JS assets stored on S3
+### s3_asset_cdn_url =
+
+### # rate limits apply to all sites
+### max_user_api_reqs_per_minute = 20
+### max_user_api_reqs_per_day = 2880
+### max_admin_api_reqs_per_minute = 60
+### max_reqs_per_ip_per_minute = 200
+### max_reqs_per_ip_per_10_seconds = 50
+### max_asset_reqs_per_ip_per_10_seconds = 200
+### max_reqs_per_ip_mode = block
+### max_reqs_rate_limit_on_private = false
+### skip_per_ip_rate_limit_trust_level = 1
+### force_anonymous_min_queue_seconds = 1
+### force_anonymous_min_per_10_seconds = 3
+### background_requests_max_queue_length = 0.5
+### reject_message_bus_queue_seconds = 0.1
+### disable_search_queue_threshold = 1
+### max_old_rebakes_per_15_minutes = 300
+### max_logster_logs = 1000
+### refresh_maxmind_db_during_precompile_days = 2
+
+### # when enabled the following headers will be added to every response:
+### # (note, if measurements do not exist for the header they will be omitted)
+### #
+### # X-Redis-Calls: 10
+### # X-Redis-Time: 1.02
+### # X-Sql-Calls: 102
+### # X-Sql-Time: 1.02
+### # X-Queue-Time: 1.01
+### enable_performance_http_headers = false
+
+### # gather JavaScript errors from clients (rate limited to 1 error per IP per minute)
+### enable_js_error_reporting = true
+
+### # This is probably not a number you want to touch, it controls the number of workers
+### # we allow mini scheduler to run. Prior to 2019 we ran a single worker.
+### # On extremely busy setups this could lead to situations where regular jobs would
+### # starve. Specifically jobs such as "run heartbeat" which keeps sidekiq running.
+### # Having a high number here is very low risk. Regular jobs are limited in scope and scale.
+### mini_scheduler_workers = 5
+
+### # enable compression on anonymous cache redis entries
+### # this slightly increases the cost of storing cache entries but can make it much
+### # cheaper to retrieve cache entries when redis is stores on a different machine to the one
+### # running the web
+### compress_anon_cache = false
+###
+### # Only store entries in redis for anonymous cache if they are observed more than N times
+### # for a specific key
+### #
+### # This ensures there are no pathological cases where we keep storing data in anonymous cache
+### # never to use it, set to 1 to store immediately, set to 0 to disable anon cache
+### anon_cache_store_threshold = 2
+
+### # EXPERIMENTAL - not yet supported in production
+### # by default admins can install and amend any theme
+### # you may restrict it so only specific themes are approved
+### # in allowlist mode all theme updates must happen via git repos
+### # themes missing from the list are automatically disallowed
+### # list is a comma separated list of git repos eg:
+### # https://github.com/discourse/discourse-custom-header-links.git,https://github.com/discourse/discourse-simple-theme.git
+### allowed_theme_repos =
+
+### # Demon::EmailSync is used in conjunction with the enable_imap site setting
+### # to sync N IMAP mailboxes with specific groups. It is a process started in
+### # unicorn.conf, and it spawns N threads (one for each multisite connection) and
+### # for each database spans another N threads (one for each configured group).
+### #
+### # We want this off by default so the process is not started when it does not
+### # need to be (e.g. development, test, certain hosting tiers)
+### enable_email_sync_demon = false
+
+### #we never want to queue more than 10000 digests per 30 minute block
+### #this can easily lead to blocking sidekiq
+### #on multisites we recommend a far lower number
+### max_digests_enqueued_per_30_mins_per_site = 10000
+
+### This cluster name can be passed to the /srv/status route to verify
+### the application cluster is the same one you are expecting
+### cluster_name =
+
+### # The YAML file used to configure multisite clusters
+### multisite_config_path = config/multisite.yml
+
+### # If false, only short (regular) polling will be attempted
+### enable_long_polling =
+
+### # Length of time to hold open a long polling connection in milliseconds
+### long_polling_interval =
+
+### # Moves asset preloading from tags in the response document head to response headers
+### preload_link_header = false
+
+### # When using an external upload store, redirect 'user_avatar' requests instead of proxying
+### redirect_avatar_requests = false
+EOF
+
+    sed -i \
+            -e "s|config.time_zone = '.*'|config.time_zone = '${TIMEZONE}'|g" \
+            /app/config/application.rb
+
+    sed -i \
+            -e "s|config.public_file_server.enabled = .*|config.public_file_server.enabled = ${SERVE_STATIC_ASSETS,,}|g" \
+            -e "s|config.log_level = .*|config.log_level = :${LOG_LEVEL}|g" \
+            -e "/config.log_level/a\  config.logger = Logger.new(Rails.root.join('log', '${LOG_PATH}/${LOG_FILE}'))" \
+            /app/config/environments/production.rb
+
+
+    sed -i \
+            -e "s|APP_ROOT = '.*'|APP_ROOT = '/app'|g" \
+            -e "s|daemonize .*|daemonize false|g" \
+            -e "s|^  threads .*|  threads ${PUMA_THREADS}|g" \
+            -e "s|^  workers .*|  workers ${PUMA_WORKERS}|g" \
+            -e "s|stdout_redirect .*|stdout_redirect '${LOG_PATH}/${PUMA_LOG_FILE}','${LOG_PATH}/${PUMA_LOG_FILE_ERROR}'|g" \
+            /app/config/puma.rb
+}
+
+configure_plugins() {
+    if var_true "${PLUGIN_ENABLE_ASSIGN}" ; then
+        plugin_installed=true
+        if [ ! -d ${PLUGIN_PATH}/assign ] ; then
+            print_notice "Enabling Plugin: Assign"
+            cp -R /assets/discourse/plugins/assign /app/plugins/
+        fi
+    fi
+
+    if var_true "${PLUGIN_ENABLE_CHAT_INTEGRATION}" ; then
+        plugin_installed=true
+        if [ ! -d ${PLUGIN_PATH}/chat ] ; then
+            print_notice "Enabling Plugin: Chat Integration"
+            cp -R /assets/discourse/plugins/chat /app/plugins/
+        fi
+    fi
+
+    if var_true "${PLUGIN_ENABLE_CHECKLIST}" ; then
+        plugin_installed=true
+        if [ ! -d ${PLUGIN_PATH}/checklist ] ; then
+            print_notice "Enabling Plugin: Checklist"
+            cp -R /assets/discourse/plugins/checklist /app/plugins/
+        fi
+    fi
+
+    if var_true "${PLUGIN_ENABLE_DETAILS}" ; then
+        plugin_installed=true
+        if [ ! -d ${PLUGIN_PATH}/discourse-details ] ; then
+            print_notice "Enabling Plugin: Details"
+            cp -R /assets/discourse/plugins/discourse-details /app/plugins/
+        fi
+    fi
+
+    if var_true "${PLUGIN_ENABLE_EVENTS}" ; then
+        plugin_installed=true
+        if [ ! -d ${PLUGIN_PATH}/events ] ; then
+            print_notice "Enabling Plugin: Events"
+            cp -R /assets/discourse/plugins/events /app/plugins/
+        fi
+    fi
+
+    if var_true "${PLUGIN_ENABLE_LAZY_YOUTUBE}" ; then
+        plugin_installed=true
+        if [ ! -d ${PLUGIN_PATH}/lazy-yt ] ; then
+            print_notice "Enabling Plugin: Lazy YouTube"
+            cp -R /assets/discourse/plugins/lazy-yt /app/plugins/
+        fi
+    fi
+
+    if var_true "${PLUGIN_ENABLE_LOCAL_DATES}" ; then
+        plugin_installed=true
+        if [ ! -d ${PLUGIN_PATH}/lazy-yt ] ; then
+            print_notice "Enabling Plugin: Local Dates"
+            cp -R /assets/discourse/plugins/discourse-local-dates /app/plugins/
+        fi
+    fi
+
+    if var_true "${PLUGIN_ENABLE_NARRATIVE_BOT}" ; then
+        plugin_installed=true
+        if [ ! -d ${PLUGIN_PATH}/discourse-narrative-bot ] ; then
+            print_notice "Enabling Plugin: Narrative Bot"
+            cp -R /assets/discourse/plugins/discourse-narrative-bot /app/plugins/
+        fi
+    fi
+
+    if var_true "${PLUGIN_ENABLE_POLLS}" ; then
+        plugin_installed=true
+        if [ ! -d ${PLUGIN_PATH}/polls ] ; then
+            print_notice "Enabling Plugin: Polls"
+            cp -R /assets/discourse/plugins/poll /app/plugins/
+        fi
+    fi
+
+    if var_true "${PLUGIN_ENABLE_PRESENCE}" ; then
+        plugin_installed=true
+        if [ ! -d ${PLUGIN_PATH}/discourse-presence ] ; then
+            print_notice "Enabling Plugin: Presence"
+            cp -R /assets/discourse/plugins/discourse-presence /app/plugins/
+        fi
+    fi
+
+    if var_true "${PLUGIN_ENABLE_PUSH_NOTIFICATIONS}" ; then
+        plugin_installed=true
+        if [ ! -d ${PLUGIN_PATH}/push ] ; then
+            print_notice "Enabling Plugin: Push Notifications"
+            cp -R /assets/discourse/plugins/push /app/plugins/
+        fi
+    fi
+
+    if var_true "${PLUGIN_ENABLE_STYLEGUIDE}" ; then
+        plugin_installed=true
+        if [ ! -d ${PLUGIN_PATH}/styleguide ] ; then
+            print_notice "Enabling Plugin: Style Guide"
+            cp -R /assets/discourse/plugins/styleguide /app/plugins/
+        fi
+    fi
+
+    if var_true "${PLUGIN_ENABLE_SAME_ORIGIN}" ; then
+        plugin_installed=true
+        if [ ! -d ${PLUGIN_PATH}/allow-same-origin ] ; then
+            print_notice "Enabling Plugin: Same Origin"
+            cp -R /assets/discourse/plugins/allow-same-origin /app/plugins/
+        fi
+    fi
+
+    if var_true "${PLUGIN_ENABLE_SOLVED}" ; then
+        plugin_installed=true
+        if [ ! -d ${PLUGIN_PATH}/solved ] ; then
+            print_notice "Enabling Plugin: Solved"
+            cp -R /assets/discourse/plugins/solved /app/plugins/
+        fi
+    fi
+
+    if var_true "${PLUGIN_ENABLE_VOTING}" ; then
+        plugin_installed=true
+        if [ ! -d ${PLUGIN_PATH}/voting ] ; then
+            print_notice "Enabling Plugin: Voting"
+            cp -R /assets/discourse/plugins/voting /app/plugins/
+        fi
+    fi
+}
+
+migrate_db() {
+    if var_true "${ENABLE_DB_MIGRATE}" ; then
+        print_info "Migrating Database - This may take a bit.."
+        cd /app
+        silent bundle exec rake db:migrate
+    fi
+}
+
+compile_assets() {
+    if var_true "${ENABLE_PRECOMPILE_ASSETS}" || var_true "${plugin_installed}" ; then
+        print_info "Precompiling Assets - This may take a bit.."
+        cd /app
+        silent bundle exec rake assets:precompile
+    fi
+}

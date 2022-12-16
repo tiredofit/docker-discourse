@@ -1,13 +1,18 @@
 #!/command/with-contenv bash
 
 source /assets/functions/00-container
+source /assets/defaults/20-discourse
 prepare_service
 PROCESS_NAME="sidekiq"
 
 check_container_initialized
-check_service_initialized 10-rails
+check_service_initialized 20-rails
 liftoff
 
 print_start "Starting Sidekiq"
 cd /app/
-bundle exec sidekiq -e production > log/sidekiq.log
+silent exec bundle exec sidekiq \
+                    --concurrency ${SIDEKIQ_THREADS} \
+                    --environment production \
+                    --logfile "${LOG_PATH}"/"${SIDEKIQ_LOG_FILE}" \
+                    ${SIDEKIQ_ADDITIONAL_ARGS} >> "${LOG_PATH}"/"${SIDEKIQ_LOG_FILE}"

@@ -1,13 +1,21 @@
 # github.com/tiredofit/docker-discourse
 
+[![GitHub release](https://img.shields.io/github/v/tag/tiredofit/docker-discourse?style=flat-square)](https://github.com/tiredofit/docker-discourse/releases/latest)
+[![Build Status](https://img.shields.io/github/workflow/status/tiredofit/docker-discourse/build?style=flat-square)](https://github.com/tiredofit/docker-discourse/actions?query=workflow%3Abuild)
+[![Docker Stars](https://img.shields.io/docker/stars/tiredofit/discourse.svg?style=flat-square&logo=docker)](https://hub.docker.com/r/tiredofit/discourse/)
+[![Docker Pulls](https://img.shields.io/docker/pulls/tiredofit/discourse.svg?style=flat-square&logo=docker)](https://hub.docker.com/r/tiredofit/discourse/)
+[![Become a sponsor](https://img.shields.io/badge/sponsor-tiredofit-181717.svg?logo=github&style=flat-square)](https://github.com/sponsors/tiredofit)
+[![Paypal Donate](https://img.shields.io/badge/donate-paypal-00457c.svg?logo=paypal&style=flat-square)](https://www.paypal.me/tiredofit)
+
+* * *
 ## About
 
-Dockerfile to build a [Discourse](https://www.discourse.org) container image.
+This will build a Docker Image for [Discourse](https://www.discourse.org/) - A web based discussion forum.
 
-* This Container uses Debian as a base which includes [s6
-overlay](https://github.com/just-containers/s6-overlay) enabled for PID 1 Init capabilities, [zabbix-agent](https://zabbix.org) based on TRUNK compiled for individual container monitoring, Cron also installed along with other tools (bash,curl, less, logrotate, nano, updated postgres-client, vim) for easier management.
 * Unlike the official Discourse image, this is meant to be self contained without requiring a base image or use the `launcher`
-* Nginx performance report removed, SQL Query, Voting and Solved Plugins installed.
+* Additional Plugins installed
+* Flexible Volatile Storage
+
 
 [Changelog](CHANGELOG.md)
 
@@ -17,82 +25,188 @@ overlay](https://github.com/just-containers/s6-overlay) enabled for PID 1 Init c
 
 ## Table of Contents
 
-- [Introduction](#introduction)
-- [Authors](#authors)
+- [About](#about)
+- [Maintainer](#maintainer)
 - [Table of Contents](#table-of-contents)
-- [Prerequisites](#prerequisites)
+- [Prerequisites and Assumptions](#prerequisites-and-assumptions)
 - [Installation](#installation)
-  - [Quick Start](#quick-start)
+  - [Build from Source](#build-from-source)
+  - [Prebuilt Images](#prebuilt-images)
 - [Configuration](#configuration)
-  - [Data-Volumes](#data-volumes)
-  - [Database](#database)
-  - [Environment Variables](#environment-variables)
+  - [Quick Start](#quick-start)
+  - [Persistent Storage](#persistent-storage)
+    - [Base Images used](#base-images-used)
+    - [Container Options](#container-options)
+    - [Log Options](#log-options)
+    - [Performance Options](#performance-options)
+    - [Path Options](#path-options)
+    - [Database Options](#database-options)
+      - [Postgresql](#postgresql)
+      - [Redis](#redis)
+    - [SMTP Options](#smtp-options)
+    - [Plugins](#plugins)
   - [Networking](#networking)
 - [Maintenance](#maintenance)
   - [Shell Access](#shell-access)
-  - [Creating User account](#creating-user-account)
-- [References](#references)
+- [Support](#support)
+  - [Usage](#usage)
+  - [Bugfixes](#bugfixes)
+  - [Feature Requests](#feature-requests)
+  - [Updates](#updates)
+- [License](#license)
 
 ## Prerequisites and Assumptions
-
-This image assumes that you are using a reverse proxy such as [jwilder/nginx-proxy](https://github.com/jwilder/nginx-proxy) or [traefik](https://github.com/traefik/traefik).
-
-You will also require an external Redis container, along with an external Postgres DB container, as well an an external SMTP server.
-
-
+*  Assumes you are using some sort of SSL terminating reverse proxy such as:
+   *  [Traefik](https://github.com/tiredofit/docker-traefik)
+   *  [Nginx](https://github.com/jc21/nginx-proxy-manager)
+   *  [Caddy](https://github.com/caddyserver/caddy)
+*  Requires access to a Postgres Server
+*  Requires access to a Redis Server
 
 ## Installation
 
-Automated builds of the image are available on [Docker Hub](https://hub.docker.com/r/tiredofit/discourse) and is the recommended method of installation.
+### Build from Source
+Clone this repository and build the image with `docker build -t (imagename) .`
 
+### Prebuilt Images
+Builds of the image are available on [Docker Hub](https://hub.docker.com/r/tiredofit/discourse) and is the recommended method of installation.
 
 ```bash
 docker pull tiredofit/discourse:(imagetag)
 ```
 
-The following image tags are available:
+The following image tags are available along with their tagged release based on what's written in the [Changelog](CHANGELOG.md):
 
-* `latest` - Most recent stable release of PHP w/Debian Jessie
+| Container OS | Tag       |
+| ------------ | --------- |
+| Debian       | `:latest` |
+
+## Configuration
 
 ### Quick Start
 
-* The quickest way to get started is using [docker-compose](https://docs.docker.com/compose/). See the examples folder for a working [docker-compose.yml](examples/docker-compose.yml) that can be modified for development or production use.
+- The quickest way to get started is using [docker-compose](https://docs.docker.com/compose/). See the examples folder for a working [docker-compose.yml](examples/docker-compose.yml) that can be modified for development or production use.
 
-* Set various [environment variables](#environment-variables) to understand the capabilities of this image.
-* Map [persistent storage](#data-volumes) for access to configuration and data files for backup.
+- Set various [environment variables](#environment-variables) to understand the capabilities of this image.
+- Map [persistent storage](#data-volumes) for access to configuration and data files for backup.
+- Make [networking ports](#networking) available for public access if necessary
 
-## Configuration
+**The first boot can take from 2 minutes - 5 minutes depending on your CPU to setup the proper schemas.**
+
+- You'll need to create a new user by going inside the container and executing `bundle exec admin:create` - then once complete visiting `https://yoursitename/admin` and logging in to bypass the welcome screen.
 
 ### Persistent Storage
 
 The container operates heavily from the `/app` folder, however there are a few folders that should be persistently mapped to ensure data persistence. The following directories are used for configuration and can be mapped for persistent storage.
 
-| Directory             | Description       |
-| --------------------- | ----------------- |
-| `/app/log`            | Logfiles          |
-| `/app/public/uploads` | Uploads Directory |
-| `/app/public/backups` | Backups Directory |
+| Directory       | Description       |
+| --------------- | ----------------- |
+| `/data/logs`    | Logfiles          |
+| `/data/uploads` | Uploads Directory |
+| `/data/backups` | Backups Directory |
+| `/data/plugins` | Plugins Driectory |
 
-### Database
+#### Base Images used
 
-Edit the environment variables to point to a working Postgres Server with the appropriate credentials, and create a database with the name `discourse` and assign appropriate permissions. The database will automatically populate and also upgrade upon startup if the discourse version changes with new releases of this image.
+This image relies on a [Debian Linux](https://hub.docker.com/r/tiredofit/debian) base image that relies on an [init system](https://github.com/just-containers/s6-overlay) for added capabilities. Outgoing SMTP capabilities are handlded via `msmtp`. Individual container performance monitoring is performed by [zabbix-agent](https://zabbix.org). Additional tools include: `bash`,`curl`,`less`,`logrotate`,`nano`,`vim`.
 
-### Environment Variables
+Be sure to view the following repositories to understand all the customizable options:
 
-Along with the Environment Variables from the [Base image](https://hub.docker.com/r/tiredofit/debian), below is the complete list of available options that can be used to customize your installation.
+| Image                                                  | Description                            |
+| ------------------------------------------------------ | -------------------------------------- |
+| [OS Base](https://github.com/tiredofit/docker-debian/) | Customized Image based on Debian Linux |
+| [Nginx](https://github.com/tiredofit/docker-nginx/)    | Nginx webserver                        |
 
 
-| Parameter                    | Description                                                                                    |
-| ---------------------------- | ---------------------------------------------------------------------------------------------- |
-| `DISCOURSE_DB_HOST`          | Your Postgres DB Host e.g. `DISCOURSE-db`                                                      |
-| `DISCOURSE_DB_PASSWORD`      | The password for the discourse db e.g. `password`                                              |
-| `DISCOURSE_REDIS_HOST`       | External Redis Host e.g. `DISCOURSE-redis`                                                     |
-| `DISCOURSE_HOSTNAME`         | The URL of your Public Discourse Installation e.g. `discourse.example.org`                     |
-| `DISCOURSE_SMTP_ADDRESS`     | The hostname of your external SMTP server e.g. `postfix-relay`                                 |
-| `DISCOURSE_SMTP_PORT`        | The port that SMTP listens on e.g. `25`                                                        |
-| `DISCOURSE_SMTP_USER_NAME`   | Optional - Username for SMTP Authentication e.g. `smtpuser`                                    |
-| `DISCOURSE_SMTP_PASSWORD`    | Optional - Password for SMTP Authentication e.g. `password`                                    |
-| `DISCOURSE_DEVELOPER_EMAILS` | The administrative email which the first account will be created with e.g. `admin@example.com` |
+#### Container Options
+| Parameter                  | Description                                                        | Default                |
+| -------------------------- | ------------------------------------------------------------------ | ---------------------- |
+| `BACKUP_PATH`              | Place to store in app backups                                      | `{DATA_PATH}/backups/` |
+| `ENABLE_DB_MIGRATE`        | Enable DB Migrations on startup                                    | `TRUE`                 |
+| `ENABLE_MINIPROFILER`      | Enable Mini Profiler                                               | `FALSE`                |
+| `ENABLE_PRECOMPILE_ASSETS` | Enable Precompiling Assets on statup                               | `TRUE`                 |
+| `SETUP_MODE`               | Automatically generate config based on these environment variables | `AUTO`                 |
+| `ENABLE_CORS`              | Enable CORS                                                        | `FALSE`                |
+| `CORS_ORIGIN`              | CORS Origin                                                        | ``                     |
+| `UPLOADS_PATH`             | Path to store Uploads                                              | `{DATA_PATH}/uploads/` |
+
+#### Log Options
+| Parameter             | Description            | Default             |
+| --------------------- | ---------------------- | ------------------- |
+| `LOG_FILE`            | Discourse Log File     | `discourse.log`     |
+| `LOG_LEVEL`           | Discourse Log Level    | `info`              |
+| `LOG_PATH`            | Path to store logfiles | `{DATA_PATH}/logs/` |
+| `PUMA_LOG_FILE`       | Puma Log               | `puma.log`          |
+| `PUMA_LOG_FILE_ERROR` | Puma Error Log         | `puma_error.log`    |
+| `SIDEKIQ_LOG_FILE`    | SideKiq Log            | `sidekiq.log`       |
+
+#### Performance Options
+| Parameter         | Description                 | Default |
+| ----------------- | --------------------------- | ------- |
+| `PUMA_THREADS`    | Minimum and Maximum Threads | `8,32`  |
+| `PUMA_WORKERS`    | How many Workers            | `4`     |
+| `SIDEKIQ_THREADS` | Sidekiq Concurrency         | `25`    |
+
+#### Path Options
+
+
+#### Database Options
+
+##### Postgresql
+| Parameter            | Description                                   | Default |
+| -------------------- | --------------------------------------------- | ------- |
+| `DB_POOL`            | How many Database connections                 | `8`     |
+| `DB_PORT`            | Database Port                                 | `5432`  |
+| `DB_TIMEOUT`         | Timeout for established connection in seconds | `5000`  |
+| `DB_TIMEOUT_CONNECT` | Connection Timeout in Seconds                 | `5`     |
+| `DB_USER`            | Username of Database                          |         |
+| `DB_NAME`            | Database name                                 |         |
+| `DB_PASS`            | Database Password                             |         |
+| `DB_HOST`            | Hostname of Database Server                   |         |
+
+##### Redis
+| Parameter                    | Description                                 | Default |
+| ---------------------------- | ------------------------------------------- | ------- |
+| `REDIS_DB`                   | Redis Database Number                       | `0`     |
+| `REDIS_ENABLE_TLS`           | Enable TLS when communication to REDIS_HOST | `FALSE` |
+| `REDIS_PORT`                 | Redis Host Listening Port                   | `6379`  |
+| `REDIS_SKIP_CLIENT_COMMANDS` | Skip client commands if unsupported         | `FALSE` |
+
+#### SMTP Options
+| Parameter             | Description                              | Default         |
+| --------------------- | ---------------------------------------- | --------------- |
+| `SMTP_AUTHENTICATION` | SMTP Authentication type `plain` `login` | `plain`         |
+| `SMTP_DOMAIN`         | HELO Domain for remote SMTP Host         | `example.com`   |
+| `SMTP_HOST`           | SMTP Hostname                            | `postfix-relay` |
+| `SMTP_PORT`           | SMTP Port                                | `25`            |
+| `SMTP_START_TLS`      | Enable STARTTLS on connection            | `TRUE`          |
+| `SMTP_TLS_FORCE`      | Force TLS on connection                  | `FALSE`         |
+| `SMTP_TLS_VERIFY`     | TLS Certificate verification             | `none`          |
+
+#### Plugins
+| Parameter                          | Description                   | Default                |
+| ---------------------------------- | ----------------------------- | ---------------------- |
+| `PLUGIN_PATH`                      | Path where plugins are stored | `{DATA_PATH}/plugins/` |
+| `PLUGIN_ENABLE_ASSIGN`             |                               | `FALSE`                |
+| `PLUGIN_ENABLE_CHAT_INTEGRATION`   |                               | `FALSE`                |
+| `PLUGIN_ENABLE_CHECKLIST`          |                               | `FALSE`                |
+| `PLUGIN_ENABLE_DETAILS`            |                               | `TRUE`                 |
+| `PLUGIN_ENABLE_EVENTS`             |                               | `FALSE`                |
+| `PLUGIN_ENABLE_FOOTNOTE`           |                               | `FALSE`                |
+| `PLUGIN_ENABLE_FORMATTING_TOOLBAR` |                               | `FALSE`                |
+| `PLUGIN_ENABLE_LAZY_YOUTUBE`       |                               | `TRUE`                 |
+| `PLUGIN_ENABLE_LOCAL_DATES`        |                               | `TRUE`                 |
+| `PLUGIN_ENABLE_MERMAID`            |                               | `FALSE`                |
+| `PLUGIN_ENABLE_NARRATIVE_BOT`      |                               | `TRUE`                 |
+| `PLUGIN_ENABLE_POLLS`              |                               | `TRUE`                 |
+| `PLUGIN_ENABLE_POST_VOTING`        |                               | `FALSE`                |
+| `PLUGIN_ENABLE_PRESENCE`           |                               | `TRUE`                 |
+| `PLUGIN_ENABLE_PUSH_NOTIFICATIONS` |                               | `FALSE`                |
+| `PLUGIN_ENABLE_SAME_ORIGIN`        |                               | `FALSE`                |
+| `PLUGIN_ENABLE_SOLVED`             |                               | `FALSE`                |
+| `PLUGIN_ENABLE_SPOILER_ALERT`      |                               | `FALSE`                |
+| `PLUGIN_ENABLE_STYLEGUIDE`         |                               | `TRUE`                 |
+| `PLUGIN_ENABLE_VOTING`             |                               | `FALSE`                |
 
 ### Networking
 
@@ -102,19 +216,37 @@ The following ports are exposed.
 | ------ | ----------- |
 | `3000` | Rails       |
 
+* * *
 ## Maintenance
+
 ### Shell Access
 
 For debugging and maintenance purposes you may want access the containers shell.
 
-```bash
-docker exec -it (whatever your container name is e.g. discourse) bash
-```
+``bash
+docker exec -it (whatever your container name is) bash
+``
+## Support
 
-### Creating User account
-Enter inside the container and type rails admin:create and follow the instructions. Then visit your Discourse forum by appending `/admin` to the suffix of the URL to be able to start configuring the system.
+These images were built to serve a specific need in a production environment and gradually have had more functionality added based on requests from the community.
+### Usage
+- The [Discussions board](../../discussions) is a great place for working with the community on tips and tricks of using this image.
+- Consider [sponsoring me](https://github.com/sponsors/tiredofit) personalized support.
+### Bugfixes
+- Please, submit a [Bug Report](issues/new) if something isn't working as expected. I'll do my best to issue a fix in short order.
 
-## References
+### Feature Requests
+- Feel free to submit a feature request, however there is no guarantee that it will be added, or at what timeline.
+- Consider [sponsoring me](https://github.com/sponsors/tiredofit) regarding development of features.
+
+### Updates
+- Best effort to track upstream changes, More priority if I am actively using the image in a production environment.
+- Consider [sponsoring me](https://github.com/sponsors/tiredofit) for up to date releases.
+
+## License
+MIT. See [LICENSE](LICENSE) for more details.
+# References
 
 * https://www.discourse.org
+
 

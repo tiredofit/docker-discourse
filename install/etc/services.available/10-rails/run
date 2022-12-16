@@ -7,6 +7,14 @@ PROCESS_NAME="rails"
 check_container_initialized
 liftoff
 
+export DISCOURSE_PORT_NUMBER=${LISTEN_PORT}
+export DISCOURSE_SITE_NAME=SITE_TITLE=${SITE_TITLE}
+export DISCOURSE_USERNAME=${ADMIN_USER}
+export DISCOURSE_PASSWORD=${ADMIN_PASS}
+export DISCOURSE_EMAIL=${ADMIN_EMAIL}
+export DISCOURSE_FIRST_NAME=${ADMIN_FIRST_NAME}
+export DISCOURSE_LAST_NAME=${ADMIN_LAST_NAME}
+
 cd /app/
 print_start "Starting Rails - Discourse version ${DISCOURSE_VERSION}"
-bundle exec rails server -b 0.0.0.0
+silent exec bundle exec rails server -b 0.0.0.0

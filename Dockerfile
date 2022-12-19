@@ -1,7 +1,7 @@
 ARG DISTRO="debian"
 ARG DISTRO_VARIANT="bullseye"
 
-FROM docker.io/tiredofit/${DISTRO}:${DISTRO_VARIANT}
+FROM docker.io/tiredofit/nginx:${DISTRO}-${DISTRO_VARIANT}
 LABEL maintainer="Dave Conroy (github.com/tiredofit)"
 
 ARG DISCOURSE_VERSION
@@ -14,6 +14,10 @@ ENV DISCOURSE_VERSION=${DISCOURSE_VERSION:-"v2.8.13"} \
     RAILS_ENV=production \
     RUBY_GC_MALLOC_LIMIT=90000000 \
     RUBY_GLOBAL_METHOD_CACHE_SIZE=131072 \
+    ENABLE_NGINX=FALSE \
+    NGINX_MODE=PROXY \
+    NGINX_PROXY_URL=http://127.0.0.1:3000 \
+    NGINX_ENABLE_CREATE_SAMPLE_HTML=FALSE \
     IMAGE_NAME="tiredofit/discourse" \
     IMAGE_REPO_URL="https://github.com/tiredofit/docker-discourse/"
 

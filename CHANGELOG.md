@@ -1,3 +1,11 @@
+## 3.1.0 2022-12-19 <dave at tiredofit dot ca>
+
+   ### Added
+      - Change base image to use `tiredofit/nginx`
+      - Set Nginx to be disabled
+      - Set Nginx to automatically proxy all requests in to 127.0.0.1:3000
+
+
 ## 3.0.1 2022-12-16 <dave at tiredofit dot ca>
 
    ### Changed

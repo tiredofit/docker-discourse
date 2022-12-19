@@ -1,7 +1,7 @@
 # github.com/tiredofit/docker-discourse
 
 [![GitHub release](https://img.shields.io/github/v/tag/tiredofit/docker-discourse?style=flat-square)](https://github.com/tiredofit/docker-discourse/releases/latest)
-[![Build Status](https://img.shields.io/github/workflow/status/tiredofit/docker-discourse/build?style=flat-square)](https://github.com/tiredofit/docker-discourse/actions?query=workflow%3Abuild)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/tiredofit/docker-discourse/main.yml?branch=main&style=flat-square)](https://github.com/tiredofit/docker-discourse/actions)
 [![Docker Stars](https://img.shields.io/docker/stars/tiredofit/discourse.svg?style=flat-square&logo=docker)](https://hub.docker.com/r/tiredofit/discourse/)
 [![Docker Pulls](https://img.shields.io/docker/pulls/tiredofit/discourse.svg?style=flat-square&logo=docker)](https://hub.docker.com/r/tiredofit/discourse/)
 [![Become a sponsor](https://img.shields.io/badge/sponsor-tiredofit-181717.svg?logo=github&style=flat-square)](https://github.com/sponsors/tiredofit)

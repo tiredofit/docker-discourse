@@ -54,7 +54,7 @@ configure_discourse() {
     db_ready redis
 
     cat <<EOF >> /app/config/discourse.conf
-## tiredofit/discourse Synapse Configuration
+## tiredofit/discourse Configuration
 ## If you want to use your own configuration files set SETUP_TYPE=MANUAL when starting container
 ## Last Generated on $(TZ=${TIMEZONE} date +'%Y-%m-%d %H:%M:%S %Z')
 

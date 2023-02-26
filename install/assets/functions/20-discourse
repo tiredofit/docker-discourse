@@ -53,7 +53,7 @@ configure_discourse() {
     sanity_db redis
     db_ready redis
 
-    cat <<EOF >> /app/config/discourse.conf
+    cat <<EOF > /app/config/discourse.conf
 ## tiredofit/discourse Configuration
 ## If you want to use your own configuration files set SETUP_TYPE=MANUAL when starting container
 ## Last Generated on $(TZ=${TIMEZONE} date +'%Y-%m-%d %H:%M:%S %Z')
@@ -65,7 +65,6 @@ cors_origin = '${CORS_ORIGIN}'
 serve_static_assets = ${SERVE_STATIC_ASSETS,,}
 relative_url_root = ${RELATIVE_URL_ROOT}
 developer_emails = ${DEVELOPER_EMAILS}
-
 
 ## Database
 ### PostgreSQL

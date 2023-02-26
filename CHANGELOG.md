@@ -1,3 +1,9 @@
+## 3.1.3 2023-02-26 <dave at tiredofit dot ca>
+
+   ### Changed
+      - Fix for building chat plugin
+
+
 ## 3.1.2 2023-02-26 <dave at tiredofit dot ca>
 
    ### Added

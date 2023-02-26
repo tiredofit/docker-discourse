@@ -129,8 +129,6 @@ RUN source /assets/functions/00-container && \
     git clone https://github.com/discourse/discourse-solved /assets/discourse/plugins/solved && \
     ### Assign Plugin
     git clone https://github.com/discourse/discourse-assign /assets/discourse/plugins/assign && \
-    ## Chat Notification
-    git clone https://github.com/discourse/discourse-chat-integration /assets/discourse/plugins/chat && \
     ## Checklist Plugin
     git clone https://github.com/cpradio/discourse-plugin-checklist /assets/discourse/plugins/checklist && \
     ### Events Plugin

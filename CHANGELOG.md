@@ -1,3 +1,9 @@
+## 3.2.2 2024-12-20 <dave at tiredofit dot ca>
+
+   ### Added
+      - 3.2.1 Patch
+
+
 ## 3.2.1 2024-12-20 <dave at tiredofit dot ca>
 
    ### Added

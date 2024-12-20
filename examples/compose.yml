@@ -23,6 +23,12 @@ services:
       - REDIS_HOST=discourse-redis
       - SITE_HOSTNAME=discourse.example.com
       - DELIVER_SECURE_ASSETS=TRUE
+
+
+      - SMTP_PORT=25
+      - SMTP_FROM=noreply@tiredofit.ca
+      - SMTP_TLS=false
+      - SMTP_DISABLE_STARTTLS=true
       - SMTP_PORT=25
       - SMTP_HOST=postfix-relay
 

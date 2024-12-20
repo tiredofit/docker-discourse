@@ -187,17 +187,17 @@ Be sure to view the following repositories to understand all the customizable op
 | `REDIS_SKIP_CLIENT_COMMANDS` | Skip client commands if unsupported         | `FALSE` |
 
 #### SMTP Options
-| Parameter             | Description                              | Default                 |
-| --------------------- | ---------------------------------------- | ----------------------- |
-| `SMTP_AUTHENTICATION` | SMTP Authentication type `plain` `login` | `plain`                 |
-| `SMTP_DOMAIN`         | HELO Domain for remote SMTP Host         | `example.com`           |
-| `SMTP_HOST`           | SMTP Hostname                            | `postfix-relay`         |
-| `SMTP_USER`           | SMTP Username                            |                         |
-| `SMTP_PASS`           | SMTP Username                            |                         |
-| `SMTP_PORT`           | SMTP Port                                | `25`                    |
-| `SMTP_START_TLS`      | Enable STARTTLS on connection            | `TRUE`                  |
-| `SMTP_TLS_FORCE`      | Force TLS on connection                  | `FALSE`                 |
-| `SMTP_TLS_VERIFY`     | TLS Certificate verification             | `none`                  |
+| Parameter             | Description                              | Default         |
+| --------------------- | ---------------------------------------- | --------------- |
+| `SMTP_AUTHENTICATION` | SMTP Authentication type `plain` `login` | `plain`         |
+| `SMTP_DOMAIN`         | HELO Domain for remote SMTP Host         | `example.com`   |
+| `SMTP_HOST`           | SMTP Hostname                            | `postfix-relay` |
+| `SMTP_USER`           | SMTP Username                            |                 |
+| `SMTP_PASS`           | SMTP Username                            |                 |
+| `SMTP_PORT`           | SMTP Port                                | `25`            |
+| `SMTP_START_TLS`      | Enable STARTTLS on connection            | `TRUE`          |
+| `SMTP_TLS_FORCE`      | Force TLS on connection                  | `FALSE`         |
+| `SMTP_TLS_VERIFY`     | TLS Certificate verification             | `none`          |
 
 #### Plugins
 | Parameter                          | Description                   | Default                |

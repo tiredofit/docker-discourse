@@ -57,7 +57,7 @@ configure_discourse() {
     sanity_db redis
     db_ready redis
 
-    cat <<EOF > /app/config/discourse.conf
+    cat <<EOF | silent sudo -u discourse tee /app/config/discourse.conf
 ## tiredofit/discourse Configuration
 ## If you want to use your own configuration files set SETUP_TYPE=MANUAL when starting container
 ## Last Generated on $(TZ=${TIMEZONE} date +'%Y-%m-%d %H:%M:%S %Z')
@@ -541,8 +541,5 @@ EOF
 }
 
 setup_shell() {
-    silent git config --global --add safe.directory /app
     echo "alias rake=\"cd /app; sudo -Eu discourse bin/rake\"" >> /root/.bashrcc
-
-
 }

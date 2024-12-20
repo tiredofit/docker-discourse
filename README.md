@@ -37,9 +37,9 @@ This will build a Docker Image for [Discourse](https://www.discourse.org/) - A w
   - [Persistent Storage](#persistent-storage)
     - [Base Images used](#base-images-used)
     - [Container Options](#container-options)
+    - [Admin Options](#admin-options)
     - [Log Options](#log-options)
     - [Performance Options](#performance-options)
-    - [Path Options](#path-options)
     - [Database Options](#database-options)
       - [Postgresql](#postgresql)
       - [Redis](#redis)
@@ -75,11 +75,11 @@ Builds of the image are available on [Docker Hub](https://hub.docker.com/r/tired
 docker pull docker.io/tiredofit/discourse:(imagetag)
 ```
 
-Builds of the image are also available on the [Github Container Registry](https://github.com/tiredofit/docker-discourse/pkgs/container/docker-discourse) 
- 
+Builds of the image are also available on the [Github Container Registry](https://github.com/tiredofit/docker-discourse/pkgs/container/docker-discourse)
+
 ```
 docker pull ghcr.io/tiredofit/docker-discourse:(imagetag)
-``` 
+```
 
 The following image tags are available along with their tagged release based on what's written in the [Changelog](CHANGELOG.md):
 
@@ -136,24 +136,32 @@ Be sure to view the following repositories to understand all the customizable op
 | `CORS_ORIGIN`              | CORS Origin                                                        | ``                     |
 | `UPLOADS_PATH`             | Path to store Uploads                                              | `{DATA_PATH}/uploads/` |
 
+#### Admin Options
+
+>> Only used on first boot
+
+| Parameter     | Description                                 | Default               |
+| ------------- | ------------------------------------------- | --------------------- |
+| `ADMIN_USER`  | Username for admin                          | `admin`               |
+| `ADMIN_EMAIL` | Admin email address                         | `foo@bar.com`         |
+| `ADMIN_PASS`  | Admin password - Must be over 10 characters | `tiredofit-discourse` |
+| `ADMIN_NAME`  | Admin Name (First and Last)                 | `Admin User`          |
+
 #### Log Options
-| Parameter             | Description            | Default             |
-| --------------------- | ---------------------- | ------------------- |
-| `LOG_FILE`            | Discourse Log File     | `discourse.log`     |
-| `LOG_LEVEL`           | Discourse Log Level    | `info`              |
-| `LOG_PATH`            | Path to store logfiles | `{DATA_PATH}/logs/` |
-| `PUMA_LOG_FILE`       | Puma Log               | `puma.log`          |
-| `PUMA_LOG_FILE_ERROR` | Puma Error Log         | `puma_error.log`    |
-| `SIDEKIQ_LOG_FILE`    | SideKiq Log            | `sidekiq.log`       |
+| Parameter                | Description            | Default             |
+| ------------------------ | ---------------------- | ------------------- |
+| `LOG_FILE`               | Discourse Log File     | `discourse.log`     |
+| `LOG_LEVEL`              | Discourse Log Level    | `info`              |
+| `LOG_PATH`               | Path to store logfiles | `{DATA_PATH}/logs/` |
+| `UNICORN_LOG_FILE`       | Unicorn Log            | `unicorn.log`       |
+| `UNICORN_LOG_ERROR_FILE` | Unicorn Error Log      | `unicorn_error.log` |
+| `SIDEKIQ_LOG_FILE`       | SideKiq Log            | `sidekiq.log`       |
 
 #### Performance Options
-| Parameter         | Description                 | Default |
-| ----------------- | --------------------------- | ------- |
-| `PUMA_THREADS`    | Minimum and Maximum Threads | `8,32`  |
-| `PUMA_WORKERS`    | How many Workers            | `4`     |
-| `SIDEKIQ_THREADS` | Sidekiq Concurrency         | `25`    |
-
-#### Path Options
+| Parameter         | Description         | Default |
+| ----------------- | ------------------- | ------- |
+| `UNICORN_WORKERS` | How many Workers    | `8`     |
+| `SIDEKIQ_THREADS` | Sidekiq Concurrency | `25`    |
 
 
 #### Database Options
@@ -193,14 +201,15 @@ Be sure to view the following repositories to understand all the customizable op
 | Parameter                          | Description                   | Default                |
 | ---------------------------------- | ----------------------------- | ---------------------- |
 | `PLUGIN_PATH`                      | Path where plugins are stored | `{DATA_PATH}/plugins/` |
+| `PLUGIN_ENABLE_AUTOMATION`          |                               | `FALSE`                |
 | `PLUGIN_ENABLE_ASSIGN`             |                               | `FALSE`                |
 | `PLUGIN_ENABLE_CHAT_INTEGRATION`   |                               | `FALSE`                |
 | `PLUGIN_ENABLE_CHECKLIST`          |                               | `FALSE`                |
 | `PLUGIN_ENABLE_DETAILS`            |                               | `TRUE`                 |
 | `PLUGIN_ENABLE_EVENTS`             |                               | `FALSE`                |
-| `PLUGIN_ENABLE_FOOTNOTE`           |                               | `FALSE`                |
+| `PLUGIN_ENABLE_FOOTNOTES`          |                               | `FALSE`                |
 | `PLUGIN_ENABLE_FORMATTING_TOOLBAR` |                               | `FALSE`                |
-| `PLUGIN_ENABLE_LAZY_YOUTUBE`       |                               | `TRUE`                 |
+| `PLUGIN_ENABLE_LAZY_VIDEOS`        |                               | `TRUE`                 |
 | `PLUGIN_ENABLE_LOCAL_DATES`        |                               | `TRUE`                 |
 | `PLUGIN_ENABLE_MERMAID`            |                               | `FALSE`                |
 | `PLUGIN_ENABLE_NARRATIVE_BOT`      |                               | `TRUE`                 |
@@ -220,7 +229,7 @@ The following ports are exposed.
 
 | Port   | Description |
 | ------ | ----------- |
-| `3000` | Rails       |
+| `3000` | Unicorn     |
 
 * * *
 ## Maintenance
@@ -237,17 +246,17 @@ docker exec -it (whatever your container name is) bash
 These images were built to serve a specific need in a production environment and gradually have had more functionality added based on requests from the community.
 ### Usage
 - The [Discussions board](../../discussions) is a great place for working with the community on tips and tricks of using this image.
-- Consider [sponsoring me](https://github.com/sponsors/tiredofit) for personalized support
+- [Sponsor me](https://tiredofit.ca/sponsor) for personalized support
 ### Bugfixes
 - Please, submit a [Bug Report](issues/new) if something isn't working as expected. I'll do my best to issue a fix in short order.
 
 ### Feature Requests
 - Feel free to submit a feature request, however there is no guarantee that it will be added, or at what timeline.
-- Consider [sponsoring me](https://github.com/sponsors/tiredofit) regarding development of features.
+- [Sponsor me](https://tiredofit.ca/sponsor) regarding development of features.
 
 ### Updates
 - Best effort to track upstream changes, More priority if I am actively using the image in a production environment.
-- Consider [sponsoring me](https://github.com/sponsors/tiredofit) for up to date releases.
+- [Sponsor me](https://tiredofit.ca/sponsor) for up to date releases.
 
 ## License
 MIT. See [LICENSE](LICENSE) for more details.

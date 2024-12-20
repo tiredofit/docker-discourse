@@ -18,14 +18,16 @@ bootstrap_filesystem() {
     if [ ! -d "${LOG_PATH}" ] ; then
        mkdir -p "${LOG_PATH}"
     fi
+        if [ $(stat -c %U "${LOG_PATH}") != "discourse" ] ; then chown -R discourse:discourse "${LOG_PATH}" ; fi
 
     if [ "${LOG_PATH}" != "/app/log/" ] ; then
         rm -rf /app/log
         ln -sf "${LOG_PATH}" /app/log
     fi
+
     create_logrotate discourse "${LOG_PATH}"/${LOG_FILE} discourse discourse
-    create_logrotate discourse_puma "${LOG_PATH}"/${PUMA_LOG_FILE} discourse discourse
-    create_logrotate discourse_puma_error "${LOG_PATH}"/${PUMA_LOG_FILE_ERROR} discourse discourse
+    create_logrotate discourse_unicorn "${UNICORN_LOG_PATH}"/${UNICORN_LOG_FILE} discourse discourse
+    create_logrotate discourse_unicorn_error "${UNICORN_LOG_PATH}"/${UNICORN_LOG_ERROR_FILE} discourse discourse
     create_logrotate discourse_sidekiq "${LOG_PATH}"/${SIDEKIQ_LOG_FILE} discourse discourse
 
     if [ ! -d "${PLUGIN_PATH}" ]; then
@@ -309,17 +311,23 @@ EOF
             -e "/config.log_level/a\  config.logger = Logger.new(Rails.root.join('log', '${LOG_PATH}/${LOG_FILE}'))" \
             /app/config/environments/production.rb
 
-
     sed -i \
-            -e "s|APP_ROOT = '.*'|APP_ROOT = '/app'|g" \
-            -e "s|daemonize .*|daemonize false|g" \
-            -e "s|^  threads .*|  threads ${PUMA_THREADS}|g" \
-            -e "s|^  workers .*|  workers ${PUMA_WORKERS}|g" \
-            -e "s|stdout_redirect .*|stdout_redirect '${LOG_PATH}/${PUMA_LOG_FILE}','${LOG_PATH}/${PUMA_LOG_FILE_ERROR}'|g" \
-            /app/config/puma.rb
+                -e "s|unicorn_stderr_path = .*|unicorn_stderr_path = \"${UNICORN_LOG_PATH}/${UNICORN_LOG_ERROR_FILE}\"|g" \
+                -e "s|unicorn_stdout_path = .*|unicorn_stdout_path = \"${UNICORN_LOG_PATH}/${UNICORN_LOG_FILE}\"|g" \
+                -e "/^listen ENV/d" \
+                -e "s#ENV[\"UNICORN_WORKERS\"] || 3#ENV[\"UNICORN_WORKERS\"] || ${UNICORN_WORKERS}#g" \
+            /app/config/unicorn.conf.rb
 }
 
 configure_plugins() {
+    if var_true "${PLUGIN_ENABLE_AUTOMATION}" ; then
+        plugin_installed=true
+        if [ ! -d ${PLUGIN_PATH}/automation ] ; then
+            print_notice "Enabling Plugin: Automation"
+            cp -R /assets/discourse/plugins/automation /app/plugins/
+        fi
+    fi
+
     if var_true "${PLUGIN_ENABLE_ASSIGN}" ; then
         plugin_installed=true
         if [ ! -d ${PLUGIN_PATH}/assign ] ; then
@@ -360,19 +368,43 @@ configure_plugins() {
         fi
     fi
 
-    if var_true "${PLUGIN_ENABLE_LAZY_YOUTUBE}" ; then
+    if var_true "${PLUGIN_ENABLE_FORMATTING_TOOLBAR}" ; then
         plugin_installed=true
-        if [ ! -d ${PLUGIN_PATH}/lazy-yt ] ; then
+        if [ ! -d ${PLUGIN_PATH}/formatting-toolbar ] ; then
+            print_notice "Enabling Plugin: Formatting Toolbar"
+            cp -R /assets/discourse/plugins/formatting-toolbar /app/plugins/
+        fi
+    fi
+
+    if var_true "${PLUGIN_ENABLE_FOOTNOTES}" ; then
+        plugin_installed=true
+        if [ ! -d ${PLUGIN_PATH}/footnote ] ; then
+            print_notice "Enabling Plugin: Footnote"
+            cp -R /assets/discourse/plugins/footnote /app/plugins/
+        fi
+    fi
+
+    if var_true "${PLUGIN_ENABLE_LAZY_VIDEOS}" ; then
+        plugin_installed=true
+        if [ ! -d ${PLUGIN_PATH}/lazy-videos ] ; then
             print_notice "Enabling Plugin: Lazy YouTube"
-            cp -R /assets/discourse/plugins/lazy-yt /app/plugins/
+            cp -R /assets/discourse/plugins/discourse-lazy-videos /app/plugins/
         fi
     fi
 
     if var_true "${PLUGIN_ENABLE_LOCAL_DATES}" ; then
         plugin_installed=true
-        if [ ! -d ${PLUGIN_PATH}/lazy-yt ] ; then
+        if [ ! -d ${PLUGIN_PATH}/local-dates ] ; then
             print_notice "Enabling Plugin: Local Dates"
             cp -R /assets/discourse/plugins/discourse-local-dates /app/plugins/
+        fi
+    fi
+
+    if var_true "${PLUGIN_ENABLE_MERMAID}" ; then
+        plugin_installed=true
+        if [ ! -d ${PLUGIN_PATH}/mermaid ] ; then
+            print_notice "Enabling Plugin: Mermaid"
+            cp -R /assets/discourse/plugins/mermaid /app/plugins/
         fi
     fi
 
@@ -389,6 +421,14 @@ configure_plugins() {
         if [ ! -d ${PLUGIN_PATH}/polls ] ; then
             print_notice "Enabling Plugin: Polls"
             cp -R /assets/discourse/plugins/poll /app/plugins/
+        fi
+    fi
+
+    if var_true "${PLUGIN_ENABLE_POST_VOTING}" ; then
+        plugin_installed=true
+        if [ ! -d ${PLUGIN_PATH}/post-voting ] ; then
+            print_notice "Enabling Plugin: Post Voting"
+            cp -R /assets/discourse/plugins/post-voting /app/plugins/
         fi
     fi
 
@@ -424,6 +464,14 @@ configure_plugins() {
         fi
     fi
 
+    if var_true "${PLUGIN_ENABLE_SPOILER_ALERT}" ; then
+        plugin_installed=true
+        if [ ! -d ${PLUGIN_PATH}/spoiler-alert ] ; then
+            print_notice "Enabling Plugin: Spoiler Alert"
+            cp -R /assets/discourse/plugins/spoiler-alert /app/plugins/
+        fi
+    fi
+
     if var_true "${PLUGIN_ENABLE_SOLVED}" ; then
         plugin_installed=true
         if [ ! -d ${PLUGIN_PATH}/solved ] ; then
@@ -456,3 +504,37 @@ compile_assets() {
         silent bundle exec rake assets:precompile
     fi
 }
+
+console_exec() {
+    local rails_cmd
+    rails_cmd="$(</dev/stdin)"
+    #print_debug "Executing script with console environment: ${rails_cmd}"
+    export RAILS_ENV=production
+    cd /app
+    silent bundle exec ruby -e "$(cat <<EOF
+require File.expand_path("/app/config/environment", __FILE__)
+${rails_cmd}
+EOF
+    )"
+}
+
+create_admin_user() {
+    console_exec <<EOF
+admin = User.find_by_email("${ADMIN_EMAIL}")
+admin = User.new if admin.nil?
+admin.username = "${ADMIN_USER}"
+admin.password = "${ADMIN_PASS}"
+admin.email = "${ADMIN_EMAIL}"
+admin.name = "${ADMIN_NAME}"
+admin.active = true
+admin.save
+errors = admin.errors.full_messages
+unless errors.empty?
+  puts errors.join("\\n")
+  exit 1
+end
+admin.grant_admin!
+admin.activate
+EOF
+}
+

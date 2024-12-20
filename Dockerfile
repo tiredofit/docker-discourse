@@ -1,5 +1,5 @@
 ARG DISTRO="debian"
-ARG DISTRO_VARIANT="bullseye"
+ARG DISTRO_VARIANT="bookworm"
 
 FROM docker.io/tiredofit/nginx:${DISTRO}-${DISTRO_VARIANT}
 LABEL maintainer="Dave Conroy (github.com/tiredofit)"
@@ -8,8 +8,8 @@ ARG DISCOURSE_VERSION
 ARG RUBY_VERSION
 
 ### Environment Variables
-ENV DISCOURSE_VERSION=${DISCOURSE_VERSION:-"v3.0.2"} \
-    RUBY_VERSION=${RUBY_VERSION:-"3.0.5"} \
+ENV DISCOURSE_VERSION=${DISCOURSE_VERSION:-"v3.3.3"} \
+    RUBY_VERSION=${RUBY_VERSION:-"3.3.6"} \
     RUBY_ALLOCATOR=/usr/lib/libjemalloc.so.2 \
     RAILS_ENV=production \
     RUBY_GC_MALLOC_LIMIT=90000000 \
@@ -25,8 +25,12 @@ ENV DISCOURSE_VERSION=${DISCOURSE_VERSION:-"v3.0.2"} \
 RUN source /assets/functions/00-container && \
     BUILD_DEPS=" \
                 build-essential \
+                g++ \
+                gcc \
+                gettext \
                 libbz2-dev \
                 libfreetype6-dev \
+	            libicu-dev \
                 libjemalloc-dev \
                 libjpeg-dev \
                 libssl-dev \
@@ -34,6 +38,9 @@ RUN source /assets/functions/00-container && \
                 libtiff-dev \
                 libxslt-dev \
                 libxml2-dev \
+                libyaml-dev \
+                make \
+                patch \
                 pkg-config \
                 zlib1g-dev \
                 " && \
@@ -41,7 +48,7 @@ RUN source /assets/functions/00-container && \
     addgroup --gid 9009 --system discourse && \
     adduser --uid 9009 --gid 9009 --home /dev/null --gecos "Discourse" --shell /sbin/nologin --disabled-password discourse && \
     curl -sSL https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add - && \
-    echo "deb https://deb.nodesource.com/node_16.x $(cat /etc/os-release |grep "VERSION=" | awk 'NR>1{print $1}' RS='(' FS=')') main" > /etc/apt/sources.list.d/nodejs.list && \
+    echo "deb https://deb.nodesource.com/node_22.x nodistro main" > /etc/apt/sources.list.d/nodejs.list && \
     curl -sSL https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - && \
     echo "deb https://dl.yarnpkg.com/debian/ stable main" > /etc/apt/sources.list.d/yarn.list && \
     curl -ssL https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - && \
@@ -59,17 +66,18 @@ RUN source /assets/functions/00-container && \
                 imagemagick \
                 jhead \
                 jpegoptim \
-                libicu67 \
+                libicu72 \
                 libjemalloc2 \
                 libjpeg-turbo-progs \
                 libpq5 \
-                libssl1.1 \
+                libssl3 \
                 libxml2 \
                 nodejs \
+                npm \
                 optipng \
                 pngquant \
-                postgresql-client-15 \
-                postgresql-contrib-15 \
+                postgresql-client-17 \
+                postgresql-contrib-17 \
                 yarn \
                 zlib1g \
                 && \
@@ -109,43 +117,41 @@ RUN source /assets/functions/00-container && \
     bundle config --local path ./vendor/bundle && \
     bundle config set --local deployment true && \
     bundle config set --local without development test && \
-    bundle install --jobs 4 && \
-    yarn install --production --frozen-lockfile &&\
-    yarn cache clean &&\
-    cd /app/app/assets/javascripts/discourse && \
-    /app/app/assets/javascripts/node_modules/.bin/ember build -prod && \
-    bundle exec rake maxminddb:get &&\
+    bundle install --jobs $(nproc) && \
+    cd /app && \
+    yarn install --frozen-lockfile && \
+    yarn cache clean && \
+    source /assets/functions/00-container && \
+    set -x && \
+    #cd /app/app/assets/javascripts/discourse && \
+    #/app/app/assets/javascripts/discourse/node_modules/.bin/ember g   && \
+    #bundle exec rake maxminddb:get &&\
     find /app/vendor/bundle -name tmp -type d -exec rm -rf {} + && \
     sed  -i "5i\ \ require 'uglifier'" /app/config/environments/production.rb && \
     sed -i "s|config.assets.js_compressor = :uglifier|config.assets.js_compressor = Uglifier.new(harmony: true)|g" /app/config/environments/production.rb  && \
+    ln -sf "$(which convert)" "/usr/bin/magick" && \
     \
 #### Install Plugins
     mkdir -p /assets/discourse/plugins && \
     mv /app/plugins/* /assets/discourse/plugins && \
     rm -rf /assets/discourse/plugins/discourse-nginx-performance-report && \
-    ## Allow Same Origin
+    ### Allow Same Origin
     git clone https://github.com/TheBunyip/discourse-allow-same-origin.git /assets/discourse/plugins/allow-same-origin && \
-    ## Allow Accepted Answers on Topics
+    ### Allow Accepted Answers on Topics
     git clone https://github.com/discourse/discourse-solved /assets/discourse/plugins/solved && \
-    ### Assign Plugin
+    #### Assign Plugin
     git clone https://github.com/discourse/discourse-assign /assets/discourse/plugins/assign && \
-    ## Checklist Plugin
-    git clone https://github.com/cpradio/discourse-plugin-checklist /assets/discourse/plugins/checklist && \
-    ### Events Plugin
+    #### Events Plugin
     git clone https://github.com/angusmcleod/discourse-events /assets/discourse/plugins/events && \
-    ### Footnote Plugin
-    git clone https://github.com/discourse/discourse-footnote /assets/discourse/plugins/footnote && \
-    ### Formatting Toolbar Plugin
+    #### Formatting Toolbar Plugin
     git clone https://github.com/MonDiscourse/discourse-formatting-toolbar /assets/discourse/plugins/formatting-toolbar && \
-    ### Mermaid
+    #### Mermaid
     git clone https://github.com/unfoldingWord/discourse-mermaid /assets/discourse/plugins/mermaid && \
-    ### Post Voting
+    #### Post Voting
     git clone https://github.com/discourse/discourse-post-voting /assets/discourse/plugins/post-voting && \
-    ## Push Notifications
+    ### Push Notifications
     git clone https://github.com/discourse/discourse-push-notifications /assets/discourse/plugins/push && \
-    ## Spoiler Alert
-    git clone https://github.com/discourse/discourse-spoiler-alert /assets/discourse/plugins/spoiler-alert && \
-    ## Adds the ability for voting on a topic in category
+    ### Adds the ability for voting on a topic in category
     git clone https://github.com/discourse/discourse-voting.git /assets/discourse/plugins/voting && \
     chown -R discourse:discourse \
                                 /assets/discourse \

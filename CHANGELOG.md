@@ -1,3 +1,14 @@
+## 3.2.0 2024-12-19 <dave at tiredofit dot ca>
+
+   ### Added
+      - Discourse 3.3.3
+      - Debian Bookworm
+      - Ruby 3.3.6
+      - Ability to create admin user and admin pass on first install
+      - Switch to Unicorn from Puma
+      - Added more plugin support
+
+
 ## 3.1.4 2023-03-17 <dave at tiredofit dot ca>
 
    ### Added

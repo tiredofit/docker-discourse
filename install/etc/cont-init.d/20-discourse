@@ -7,9 +7,12 @@ PROCESS_NAME="discourse"
 bootstrap_filesystem
 configure_discourse
 custom_files /app/
+silent git config --global --add safe.directory /app
 custom_scripts
 configure_plugins
 migrate_db
 compile_assets
+create_admin_user
+chown -R discourse:discourse /app "${LOG_PATH}"
 
 liftoff

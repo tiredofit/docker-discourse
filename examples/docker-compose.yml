@@ -1,4 +1,4 @@
-version: '2.4'
+
 services:
   discourse-app:
     container_name: discourse-app
@@ -34,7 +34,7 @@ services:
 
   discourse-db:
     container_name: discourse-db
-    image: tiredofit/postgres:15-latest
+    image: tiredofit/postgres:17
     restart: always
     volumes:
       - ./db:/var/lib/postgresql/data
@@ -42,9 +42,10 @@ services:
       - TIMEZONE=America/Vancouver
       - CONTAINER_NAME=discourse-db
 
-      - POSTGRES_DB=discourse
-      - POSTGRES_USER=discourse
-      - POSTGRES_PASSWORD=password
+      - SUPERUSER_PASS=superuser
+      - DB_NAME=discourse
+      - DB_USER=discourse
+      - DB_PASS=password
     networks:
       - services
 
@@ -68,14 +69,14 @@ services:
     environment:
       - TIMEZONE=America/Vancouver
       - CONTAINER_NAME=discourse-db-backup
-      - DB_HOST=discourse-db
-      - DB_TYPE=postgres
-      - DB_NAME=discourse
-      - DB_USER=discourse
-      - DB_PASS=password
-      - DB_DUMP_FREQ=1440
-      - DB_DUMP_BEGIN=0000
-      - DB_CLEANUP_TIME=8640
+      - DB01_HOST=discourse-db
+      - DB01_TYPE=postgres
+      - DB01_NAME=discourse
+      - DB01_USER=discourse
+      - DB01_PASS=password
+      - DB01_BACKUP_INTERVAL=1440
+      - DB01_BACKUP_BEGIN=0000
+      - DB01_CLEANUP_TIME=8640
     networks:
       - services
     restart: always

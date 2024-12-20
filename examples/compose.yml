@@ -22,11 +22,17 @@ services:
 
       - REDIS_HOST=discourse-redis
       - SITE_HOSTNAME=discourse.example.com
-
+      - DELIVER_SECURE_ASSETS=TRUE
       - SMTP_PORT=25
       - SMTP_HOST=postfix-relay
 
       - DEVELOPER_EMAILS=hostmaster@example.com
+
+      - ADMIN_EMAIL=admin@example.com
+      - ADMIN_NAME=Admin User
+      - ADMIN_USER=admin
+      - ADMIN_PASS=min10charpass
+
     restart: always
     networks:
       - proxy
@@ -51,9 +57,9 @@ services:
 
   discourse-redis:
     image: tiredofit/redis:7
-    container_name: discourse-example-org-redis
-    volumes:
-      - ./redis:/var/lib/redis
+    container_name: discourse-redis
+    #volumes:
+    #  - ./redis:/var/lib/redis
     environment:
       - TIMEZONE=America/Vancouver
       - CONTAINER_NAME=discourse-redis

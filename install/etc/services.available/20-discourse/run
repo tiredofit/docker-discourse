@@ -7,16 +7,17 @@ PROCESS_NAME="rails"
 check_container_initialized
 liftoff
 
+if var_true "${DELIVER_SECURE_ASSETS}" ; then export DISCOURSE_FORCE_HTTPS=true ; fi
 export DISCOURSE_SITE_TITLE=${SITE_TITLE}
 export UNICORN_WORKERS=${UNICORN_WORKERS}
 
 cd /app/
 print_start "Starting Unicorn - Discourse version ${DISCOURSE_VERSION}"
-sudo -u discourse \
+s6-setuidgid discourse \
                     exec bin/unicorn \
                                     -E production \
                                     -o 0.0.0.0 \
                                     -p "${LISTEN_PORT}" \
-                                    -c "config/unicorn.conf.rb"
+                                    -c "config/unicorn.conf.rb" ${UNICORN_ADDITIONAL_ARGS}
 
 

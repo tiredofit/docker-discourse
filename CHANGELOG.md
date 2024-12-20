@@ -1,3 +1,13 @@
+## 3.2.1 2024-12-20 <dave at tiredofit dot ca>
+
+   ### Added
+      - Image cleanup
+      - Refine Options
+      - Add rake alias
+      - Set Mermaid plugin to true
+      - Change defaults
+
+
 ## 3.2.0 2024-12-19 <dave at tiredofit dot ca>
 
    ### Added

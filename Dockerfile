@@ -119,14 +119,13 @@ RUN source /assets/functions/00-container && \
     bundle config set --local without development test && \
     bundle install --jobs $(nproc) && \
     cd /app && \
+    git config --global --add safe.directory /app && \
     yarn install --frozen-lockfile && \
+    yarn run postinstall && \
     yarn cache clean && \
-    source /assets/functions/00-container && \
-    set -x && \
-    #cd /app/app/assets/javascripts/discourse && \
-    #/app/app/assets/javascripts/discourse/node_modules/.bin/ember g   && \
-    #bundle exec rake maxminddb:get &&\
     find /app/vendor/bundle -name tmp -type d -exec rm -rf {} + && \
+    curl -sSL https://git.io/GeoLite2-ASN.mmdb -o /app/vendor/data/GeoLite2-ASN.mmdb && \
+    curl -sSL https://git.io/GeoLite2-City.mmdb -o /app/vendor/data/GeoLite2-City.mmdb && \
     sed  -i "5i\ \ require 'uglifier'" /app/config/environments/production.rb && \
     sed -i "s|config.assets.js_compressor = :uglifier|config.assets.js_compressor = Uglifier.new(harmony: true)|g" /app/config/environments/production.rb  && \
     ln -sf "$(which convert)" "/usr/bin/magick" && \
@@ -169,7 +168,16 @@ RUN source /assets/functions/00-container && \
         /app/.vscode-sample \
         /app/bin/docker \
         /app/Brewfile \
+        /app/CODEOWNERS \
         /app/CONTRIBUTING.md \
+        /app/config/dev_defaults.yml \
+        /app/config/*.sample \
+        /app/config/logrotate.conf \
+        /app/config/multisite.yml.production-sample \
+        /app/config/nginx* \
+        /app/config/puma* \
+        /app/config/unicorn_upstart.conf \
+        /app/deploy.rb.sample \
         /app/d \
         /app/discourse.sublime-project \
         /app/install-imagemagick \

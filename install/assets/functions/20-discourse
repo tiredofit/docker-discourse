@@ -30,6 +30,8 @@ bootstrap_filesystem() {
     create_logrotate discourse_unicorn_error "${UNICORN_LOG_PATH}"/${UNICORN_LOG_ERROR_FILE} discourse discourse
     create_logrotate discourse_sidekiq "${LOG_PATH}"/${SIDEKIQ_LOG_FILE} discourse discourse
 
+    #chown -R discourse:discourse /app "${LOG_PATH}"
+
     if [ ! -d "${PLUGIN_PATH}" ]; then
         mkdir -p "${PLUGIN_PATH}"
     fi
@@ -538,3 +540,9 @@ admin.activate
 EOF
 }
 
+setup_shell() {
+    silent git config --global --add safe.directory /app
+    echo "alias rake=\"cd /app; sudo -Eu discourse bin/rake\"" >> /root/.bashrcc
+
+
+}

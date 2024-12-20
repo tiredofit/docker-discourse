@@ -97,9 +97,8 @@ The following image tags are available along with their tagged release based on 
 - Map [persistent storage](#data-volumes) for access to configuration and data files for backup.
 - Make [networking ports](#networking) available for public access if necessary
 
-**The first boot can take from 2 minutes - 5 minutes depending on your CPU to setup the proper schemas.**
+**The first boot can take from 2 minutes - 5 minutes depending on your CPU to setup the proper schemas and precompile assets**
 
-- You'll need to create a new user by going inside the container and executing `bundle exec admin:create` - then once complete visiting `https://yoursitename/admin` and logging in to bypass the welcome screen.
 
 ### Persistent Storage
 
@@ -128,6 +127,7 @@ Be sure to view the following repositories to understand all the customizable op
 | Parameter                  | Description                                                        | Default                |
 | -------------------------- | ------------------------------------------------------------------ | ---------------------- |
 | `BACKUP_PATH`              | Place to store in app backups                                      | `{DATA_PATH}/backups/` |
+| `DELIVER_SECURE_ASSETS`    | Enable serving of HTTPS assets                                     | `FALSE`                |
 | `ENABLE_DB_MIGRATE`        | Enable DB Migrations on startup                                    | `TRUE`                 |
 | `ENABLE_MINIPROFILER`      | Enable Mini Profiler                                               | `FALSE`                |
 | `ENABLE_PRECOMPILE_ASSETS` | Enable Precompiling Assets on statup                               | `TRUE`                 |
@@ -143,7 +143,7 @@ Be sure to view the following repositories to understand all the customizable op
 | Parameter     | Description                                 | Default               |
 | ------------- | ------------------------------------------- | --------------------- |
 | `ADMIN_USER`  | Username for admin                          | `admin`               |
-| `ADMIN_EMAIL` | Admin email address                         | `foo@bar.com`         |
+| `ADMIN_EMAIL` | Admin email address                         | `admin@example.com`   |
 | `ADMIN_PASS`  | Admin password - Must be over 10 characters | `tiredofit-discourse` |
 | `ADMIN_NAME`  | Admin Name (First and Last)                 | `Admin User`          |
 
@@ -187,21 +187,23 @@ Be sure to view the following repositories to understand all the customizable op
 | `REDIS_SKIP_CLIENT_COMMANDS` | Skip client commands if unsupported         | `FALSE` |
 
 #### SMTP Options
-| Parameter             | Description                              | Default         |
-| --------------------- | ---------------------------------------- | --------------- |
-| `SMTP_AUTHENTICATION` | SMTP Authentication type `plain` `login` | `plain`         |
-| `SMTP_DOMAIN`         | HELO Domain for remote SMTP Host         | `example.com`   |
-| `SMTP_HOST`           | SMTP Hostname                            | `postfix-relay` |
-| `SMTP_PORT`           | SMTP Port                                | `25`            |
-| `SMTP_START_TLS`      | Enable STARTTLS on connection            | `TRUE`          |
-| `SMTP_TLS_FORCE`      | Force TLS on connection                  | `FALSE`         |
-| `SMTP_TLS_VERIFY`     | TLS Certificate verification             | `none`          |
+| Parameter             | Description                              | Default                 |
+| --------------------- | ---------------------------------------- | ----------------------- |
+| `SMTP_AUTHENTICATION` | SMTP Authentication type `plain` `login` | `plain`                 |
+| `SMTP_DOMAIN`         | HELO Domain for remote SMTP Host         | `example.com`           |
+| `SMTP_HOST`           | SMTP Hostname                            | `postfix-relay`         |
+| `SMTP_USER`           | SMTP Username                            |                         |
+| `SMTP_PASS`           | SMTP Username                            |                         |
+| `SMTP_PORT`           | SMTP Port                                | `25`                    |
+| `SMTP_START_TLS`      | Enable STARTTLS on connection            | `TRUE`                  |
+| `SMTP_TLS_FORCE`      | Force TLS on connection                  | `FALSE`                 |
+| `SMTP_TLS_VERIFY`     | TLS Certificate verification             | `none`                  |
 
 #### Plugins
 | Parameter                          | Description                   | Default                |
 | ---------------------------------- | ----------------------------- | ---------------------- |
 | `PLUGIN_PATH`                      | Path where plugins are stored | `{DATA_PATH}/plugins/` |
-| `PLUGIN_ENABLE_AUTOMATION`          |                               | `FALSE`                |
+| `PLUGIN_ENABLE_AUTOMATION`         |                               | `FALSE`                |
 | `PLUGIN_ENABLE_ASSIGN`             |                               | `FALSE`                |
 | `PLUGIN_ENABLE_CHAT_INTEGRATION`   |                               | `FALSE`                |
 | `PLUGIN_ENABLE_CHECKLIST`          |                               | `FALSE`                |
@@ -211,7 +213,7 @@ Be sure to view the following repositories to understand all the customizable op
 | `PLUGIN_ENABLE_FORMATTING_TOOLBAR` |                               | `FALSE`                |
 | `PLUGIN_ENABLE_LAZY_VIDEOS`        |                               | `TRUE`                 |
 | `PLUGIN_ENABLE_LOCAL_DATES`        |                               | `TRUE`                 |
-| `PLUGIN_ENABLE_MERMAID`            |                               | `FALSE`                |
+| `PLUGIN_ENABLE_MERMAID`            |                               | `TRUE`                 |
 | `PLUGIN_ENABLE_NARRATIVE_BOT`      |                               | `TRUE`                 |
 | `PLUGIN_ENABLE_POLLS`              |                               | `TRUE`                 |
 | `PLUGIN_ENABLE_POST_VOTING`        |                               | `FALSE`                |
@@ -241,6 +243,9 @@ For debugging and maintenance purposes you may want access the containers shell.
 ``bash
 docker exec -it (whatever your container name is) bash
 ``
+
+Try using the command `rake --tasks`
+
 ## Support
 
 These images were built to serve a specific need in a production environment and gradually have had more functionality added based on requests from the community.

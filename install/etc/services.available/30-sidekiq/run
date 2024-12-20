@@ -11,8 +11,9 @@ liftoff
 
 print_start "Starting Sidekiq"
 cd /app/
-silent exec bundle exec sidekiq \
-                    --concurrency ${SIDEKIQ_THREADS} \
-                    --environment production \
-                    --logfile "${LOG_PATH}"/"${SIDEKIQ_LOG_FILE}" \
-                    ${SIDEKIQ_ADDITIONAL_ARGS} >> "${LOG_PATH}"/"${SIDEKIQ_LOG_FILE}"
+silent sudo -Eu discourse \
+                            exec bundle exec sidekiq \
+                                --concurrency ${SIDEKIQ_THREADS} \
+                                --environment production \
+                                --logfile "${LOG_PATH}"/"${SIDEKIQ_LOG_FILE}" \
+                                ${SIDEKIQ_ADDITIONAL_ARGS} >> "${LOG_PATH}"/"${SIDEKIQ_LOG_FILE}"

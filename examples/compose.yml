@@ -5,8 +5,8 @@ services:
     image: tiredofit/discourse:latest
     labels:
       - traefik.enable=true
-      - traefik.http.routers.discourse-example-org.rule=Host(`discourse.example.com`)
-      - traefik.http.services.discourse-example-org.loadbalancer.server.port=3000
+      - traefik.http.routers.discourse-example-com.rule=Host(`discourse.example.com`)
+      - traefik.http.services.discourse-example-com.loadbalancer.server.port=3000
     volumes:
       - ./logs:/data/logs
       - ./data/uploads:/data/uploads
@@ -21,24 +21,24 @@ services:
       - DB_PASS=password
 
       - REDIS_HOST=discourse-redis
-      - SITE_HOSTNAME=discourse.example.com
-      - DELIVER_SECURE_ASSETS=TRUE
 
-
-      - SMTP_PORT=25
-      - SMTP_FROM=noreply@tiredofit.ca
-      - SMTP_TLS=false
-      - SMTP_DISABLE_STARTTLS=true
-      - SMTP_PORT=25
-      - SMTP_HOST=postfix-relay
-
-      - DEVELOPER_EMAILS=hostmaster@example.com
 
       - ADMIN_EMAIL=admin@example.com
       - ADMIN_NAME=Admin User
       - ADMIN_USER=admin
       - ADMIN_PASS=min10charpass
 
+      - SITE_HOSTNAME=discourse.example.com
+      - DELIVER_SECURE_ASSETS=TRUE
+
+      - SMTP_PORT=25
+      - SMTP_FROM=noreply@example.com
+      - SMTP_TLS=false
+      - SMTP_DISABLE_STARTTLS=true
+      - SMTP_PORT=25
+      - SMTP_HOST=postfix-relay
+
+      - DEVELOPER_EMAILS=hostmaster@example.com
     restart: always
     networks:
       - proxy

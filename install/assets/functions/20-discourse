@@ -49,6 +49,12 @@ bootstrap_filesystem() {
         ln -sf "${UPLOADS_PATH}" /app/public/uploads
     fi
     if [ $(stat -c %U "${UPLOADS_PATH}") != "discourse" ] ; then chown discourse:discourse "${UPLOADS_PATH}" ; fi
+
+    mkdir -p \
+		/app/tmp/cache
+    	 	/app/tmp/pids
+
+    chown -R discourse:discourse /app/tmp
 }
 
 configure_discourse() {
@@ -489,6 +495,8 @@ configure_plugins() {
             cp -R /assets/discourse/plugins/voting /app/plugins/
         fi
     fi
+
+    chown -R discourse:discourse /app/plugins
 }
 
 migrate_db() {
@@ -541,5 +549,5 @@ EOF
 }
 
 setup_shell() {
-    echo "alias rake=\"cd /app; sudo -Eu discourse bin/rake\"" >> /root/.bashrcc
+    echo "alias rake=\"cd /app; sudo -Eu discourse bin/rake\"" >> /root/.bashrc
 }

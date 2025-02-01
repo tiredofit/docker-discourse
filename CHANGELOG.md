@@ -1,3 +1,11 @@
+## 3.2.3 2025-02-01 <dave at tiredofit dot ca>
+
+   ### Changed
+      - Create /app/tmp ahead of time and set proper permissions
+      - Set permissions on introducing app plugins
+      - Fix an issue with a shell alias
+
+
 ## 3.2.2 2024-12-20 <dave at tiredofit dot ca>
 
    ### Added

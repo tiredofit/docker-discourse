@@ -30,7 +30,7 @@ RUN source /assets/functions/00-container && \
                 gettext \
                 libbz2-dev \
                 libfreetype6-dev \
-	            libicu-dev \
+                libicu-dev \
                 libjemalloc-dev \
                 libjpeg-dev \
                 libssl-dev \

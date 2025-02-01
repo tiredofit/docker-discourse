@@ -412,7 +412,7 @@ configure_plugins() {
         plugin_installed=true
         if [ ! -d ${PLUGIN_PATH}/mermaid ] ; then
             print_notice "Enabling Plugin: Mermaid"
-            cp -R /assets/discourse/plugins/mermaid /app/plugins/
+            cp -R /assets/discourse/plugins/discourse-mermaid /app/plugins/
         fi
     fi
 

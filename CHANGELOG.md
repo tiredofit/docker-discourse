@@ -1,3 +1,9 @@
+## 3.2.5 2025-02-01 <dave at tiredofit dot ca>
+
+   ### Changed
+      - Rename mermaid plugin to discourse-mermaid
+
+
 ## 3.2.4 2025-02-01 <dave at tiredofit dot ca>
 
    ### Changed

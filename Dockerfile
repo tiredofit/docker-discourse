@@ -145,7 +145,7 @@ RUN source /assets/functions/00-container && \
     #### Formatting Toolbar Plugin
     git clone https://github.com/MonDiscourse/discourse-formatting-toolbar /assets/discourse/plugins/formatting-toolbar && \
     #### Mermaid
-    git clone https://github.com/unfoldingWord/discourse-mermaid /assets/discourse/plugins/mermaid && \
+    git clone https://github.com/unfoldingWord/discourse-mermaid /assets/discourse/plugins/discourse-mermaid && \
     #### Post Voting
     git clone https://github.com/discourse/discourse-post-voting /assets/discourse/plugins/post-voting && \
     ### Push Notifications

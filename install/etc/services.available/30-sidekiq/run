@@ -6,7 +6,7 @@ prepare_service
 PROCESS_NAME="sidekiq"
 
 check_container_initialized
-check_service_initialized 20-rails
+check_service_initialized 20-discourse
 liftoff
 
 print_start "Starting Sidekiq"

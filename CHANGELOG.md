@@ -1,3 +1,9 @@
+## 3.2.4 2025-02-01 <dave at tiredofit dot ca>
+
+   ### Changed
+      - Fix to sidekiq not starting trying to reference old named init script
+
+
 ## 3.2.3 2025-02-01 <dave at tiredofit dot ca>
 
    ### Changed

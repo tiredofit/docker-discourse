@@ -51,8 +51,8 @@ bootstrap_filesystem() {
     if [ $(stat -c %U "${UPLOADS_PATH}") != "discourse" ] ; then chown discourse:discourse "${UPLOADS_PATH}" ; fi
 
     mkdir -p \
-		/app/tmp/cache
-    	 	/app/tmp/pids
+		/app/tmp/cache \
+        /app/tmp/pids
 
     chown -R discourse:discourse /app/tmp
 }

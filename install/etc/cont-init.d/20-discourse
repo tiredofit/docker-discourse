@@ -13,5 +13,6 @@ setup_shell
 migrate_db
 compile_assets
 create_admin_user
+chown discourse:discourse /app
 
 liftoff

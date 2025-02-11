@@ -14,6 +14,7 @@ ENV DISCOURSE_VERSION=${DISCOURSE_VERSION:-"v3.4.0"} \
     RAILS_ENV=production \
     RUBY_GC_MALLOC_LIMIT=90000000 \
     RUBY_GLOBAL_METHOD_CACHE_SIZE=131072 \
+    PATH=/usr/local/share/pnpm:$PATH \
     ENABLE_NGINX=FALSE \
     NGINX_MODE=PROXY \
     NGINX_PROXY_URL=http://127.0.0.1:3000 \
@@ -49,8 +50,6 @@ RUN source /assets/functions/00-container && \
     adduser --uid 9009 --gid 9009 --home /dev/null --gecos "Discourse" --shell /sbin/nologin --disabled-password discourse && \
     curl -sSL https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add - && \
     echo "deb https://deb.nodesource.com/node_22.x nodistro main" > /etc/apt/sources.list.d/nodejs.list && \
-    curl -sSL https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - && \
-    echo "deb https://dl.yarnpkg.com/debian/ stable main" > /etc/apt/sources.list.d/yarn.list && \
     curl -ssL https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - && \
     echo "deb http://apt.postgresql.org/pub/repos/apt/ $(cat /etc/os-release |grep "VERSION=" | awk 'NR>1{print $1}' RS='(' FS=')')-pgdg main" > /etc/apt/sources.list.d/postgres.list && \
     package update && \
@@ -78,7 +77,6 @@ RUN source /assets/functions/00-container && \
                 pngquant \
                 postgresql-client-17 \
                 postgresql-contrib-17 \
-                yarn \
                 zlib1g \
                 && \
     \
@@ -105,10 +103,9 @@ RUN source /assets/functions/00-container && \
         svgo \
         terser \
         uglify-js \
-        pnpm \
+        pnpm@9 \
         && \
     \
-    ### Download Discourse
     clone_git_repo "https://github.com/discourse/discourse" "${DISCOURSE_VERSION}" /app && \
     BUNDLER_VERSION="$(grep "BUNDLED WITH" Gemfile.lock -A 1 | grep -v "BUNDLED WITH" | tr -d "[:space:]")" && \
     gem install bundler:"${BUNDLER_VERSION}" && \
@@ -120,9 +117,11 @@ RUN source /assets/functions/00-container && \
     bundle install --jobs $(nproc) && \
     cd /app && \
     git config --global --add safe.directory /app && \
-    yarn install --frozen-lockfile && \
-    yarn run postinstall && \
-    yarn cache clean && \
+    mkdir -p /usr/local/share/pnpm && \
+    pnpm install --frozen-lockfile && \
+    #pnpm run postinstall && \
+    #pnpm cache clean && \
+    pnpm cache delete && \
     find /app/vendor/bundle -name tmp -type d -exec rm -rf {} + && \
     curl -sSL https://git.io/GeoLite2-ASN.mmdb -o /app/vendor/data/GeoLite2-ASN.mmdb && \
     curl -sSL https://git.io/GeoLite2-City.mmdb -o /app/vendor/data/GeoLite2-City.mmdb && \
@@ -130,7 +129,6 @@ RUN source /assets/functions/00-container && \
     sed -i "s|config.assets.js_compressor = :uglifier|config.assets.js_compressor = Uglifier.new(harmony: true)|g" /app/config/environments/production.rb  && \
     ln -sf "$(which convert)" "/usr/bin/magick" && \
     \
-#### Install Plugins
     mkdir -p /assets/discourse/plugins && \
     mv /app/plugins/* /assets/discourse/plugins && \
     rm -rf /assets/discourse/plugins/discourse-nginx-performance-report && \
@@ -160,38 +158,38 @@ RUN source /assets/functions/00-container && \
     package remove ${BUILD_DEPS} && \
     package cleanup && \
     rm -rf \
-        /app/.devcontainer \
-        /app/.editorconfig \
-        /app/.github \
-        /app/.*ignore \
-        /app/.prettier* \
-        /app/.vscode-sample \
-        /app/bin/docker \
-        /app/Brewfile \
-        /app/CODEOWNERS \
-        /app/CONTRIBUTING.md \
-        /app/config/dev_defaults.yml \
-        /app/config/*.sample \
-        /app/config/logrotate.conf \
-        /app/config/multisite.yml.production-sample \
-        /app/config/nginx* \
-        /app/config/puma* \
-        /app/config/unicorn_upstart.conf \
-        /app/deploy.rb.sample \
-        /app/d \
-        /app/discourse.sublime-project \
-        /app/install-imagemagick \
-        /app/lefthook.yml \
-        /app/test \
-        /app/translator.yml \
-        /app/vendor/bundle/ruby/${RUBY_VERSION:0:3}/cache/* \
-        /root/.bundle \
-        /root/.config \
-        /root/.local \
-        /root/.npm \
-        /root/.profile \
-        /tmp/* \
-        /usr/src/*
+            /app/.devcontainer \
+            /app/.editorconfig \
+            /app/.github \
+            /app/.*ignore \
+            /app/.prettier* \
+            /app/.vscode-sample \
+            /app/bin/docker \
+            /app/Brewfile \
+            /app/CODEOWNERS \
+            /app/CONTRIBUTING.md \
+            /app/config/dev_defaults.yml \
+            /app/config/*.sample \
+            /app/config/logrotate.conf \
+            /app/config/multisite.yml.production-sample \
+            /app/config/nginx* \
+            /app/config/puma* \
+            /app/config/unicorn_upstart.conf \
+            /app/deploy.rb.sample \
+            /app/d \
+            /app/discourse.sublime-project \
+            /app/install-imagemagick \
+            /app/lefthook.yml \
+            /app/test \
+            /app/translator.yml \
+            /app/vendor/bundle/ruby/${RUBY_VERSION:0:3}/cache/* \
+            /root/.bundle \
+            /root/.config \
+            /root/.local \
+            /root/.npm \
+            /root/.profile \
+            /tmp/* \
+            /usr/src/*
 
 WORKDIR /app
 EXPOSE 3000

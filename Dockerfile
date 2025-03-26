@@ -9,7 +9,7 @@ ARG RUBY_VERSION
 
 ### Environment Variables
 ENV DISCOURSE_VERSION=${DISCOURSE_VERSION:-"v3.4.2"} \
-    RUBY_VERSION=${RUBY_VERSION:-"3.3.8"} \
+    RUBY_VERSION=${RUBY_VERSION:-"3.3.7"} \
     RUBY_ALLOCATOR=/usr/lib/libjemalloc.so.2 \
     RAILS_ENV=production \
     RUBY_GC_MALLOC_LIMIT=90000000 \

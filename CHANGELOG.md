@@ -1,3 +1,9 @@
+## 3.2.9 2025-03-26 <dave at tiredofit dot ca>
+
+   ### Changed
+      - Downgrade Ruby 3.3.7
+
+
 ## 3.2.8 2025-03-26 <dave at tiredofit dot ca>
 
    ### Added

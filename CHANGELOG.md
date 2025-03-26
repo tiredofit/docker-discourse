@@ -1,3 +1,10 @@
+## 3.2.8 2025-03-26 <dave at tiredofit dot ca>
+
+   ### Added
+      - Discourse 3.4.2
+      - Ruby 3.3.8
+
+
 ## 3.2.7 2025-02-24 <dave at tiredofit dot ca>
 
    ### Added

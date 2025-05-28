@@ -1,3 +1,9 @@
+## 3.2.12 2025-05-28 <dave at tiredofit dot ca>
+
+   ### Added
+      - Force change ownership of log directory post compilation of assets
+
+
 ## 3.2.11 2025-05-28 <dave at tiredofit dot ca>
 
    ### Added

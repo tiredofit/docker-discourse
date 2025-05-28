@@ -513,6 +513,10 @@ compile_assets() {
         cd /app
         silent bundle exec rake assets:precompile
     fi
+    chown -R discourse:discourse \
+                                /app/
+                                "${LOG_PATH}"
+
 }
 
 console_exec() {

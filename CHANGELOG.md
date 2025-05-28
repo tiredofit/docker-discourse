@@ -1,3 +1,9 @@
+## 3.2.11 2025-05-28 <dave at tiredofit dot ca>
+
+   ### Added
+      - Discourse 3.4.4
+
+
 ## 3.2.10 2025-04-29 <dave at tiredofit dot ca>
 
    ### Added

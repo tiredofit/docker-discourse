@@ -1,3 +1,5 @@
+
+
 ARG DISTRO="debian"
 ARG DISTRO_VARIANT="bookworm"
 
@@ -8,7 +10,7 @@ ARG DISCOURSE_VERSION
 ARG RUBY_VERSION
 
 ### Environment Variables
-ENV DISCOURSE_VERSION=${DISCOURSE_VERSION:-"v3.4.3"} \
+ENV DISCOURSE_VERSION=${DISCOURSE_VERSION:-"v3.4.4"} \
     RUBY_VERSION=${RUBY_VERSION:-"3.3.8"} \
     RUBY_ALLOCATOR=/usr/lib/libjemalloc.so.2 \
     RAILS_ENV=production \

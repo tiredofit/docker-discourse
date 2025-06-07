@@ -514,7 +514,7 @@ compile_assets() {
         silent bundle exec rake assets:precompile
     fi
     chown -R discourse:discourse \
-                                /app/
+                                /app/ \
                                 "${LOG_PATH}"
 
 }

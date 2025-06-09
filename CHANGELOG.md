@@ -1,3 +1,12 @@
+## 3.2.13 2025-06-09 <dave at tiredofit dot ca>
+
+   ### Added
+      - Discourse 3.4.5
+
+   ### Changed
+      - Fix permissions when compiling_assets (credit: DrChat@github)
+
+
 ## 3.2.12 2025-05-28 <dave at tiredofit dot ca>
 
    ### Added

@@ -1,3 +1,10 @@
+## 3.2.14 2025-06-13 <dave at tiredofit dot ca>
+
+   ### Changed
+      - Fix issue with Plugins path not linking properly
+      - Fix issue with Uploads path not being created properly with correct permissions
+
+
 ## 3.2.13 2025-06-09 <dave at tiredofit dot ca>
 
    ### Added

@@ -37,17 +37,19 @@ bootstrap_filesystem() {
     fi
     if [ "${PLUGIN_PATH}" != "/app/plugins/" ] ; then
         rm -rf /app/plugins
-        ln -sf "${PLUGIN_PATH}" /app/public/uploads
+        ln -sf "${PLUGIN_PATH}" /app/plugins
     fi
     if [ $(stat -c %U "${PLUGIN_PATH}") != "discourse" ] ; then chown discourse:discourse "${PLUGIN_PATH}" ; fi
 
     if [ ! -d "${UPLOADS_PATH}" ]; then
         mkdir -p "${UPLOADS_PATH}"
     fi
+
     if [ "${UPLOADS_PATH}" != "/app/public/uploads/" ] ; then
         rm -rf /app/public/uploads
         ln -sf "${UPLOADS_PATH}" /app/public/uploads
     fi
+
     if [ $(stat -c %U "${UPLOADS_PATH}") != "discourse" ] ; then chown discourse:discourse "${UPLOADS_PATH}" ; fi
 
     mkdir -p \

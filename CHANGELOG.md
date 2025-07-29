@@ -1,3 +1,10 @@
+## 3.2.16 2025-07-29 <dave at tiredofit dot ca>
+
+   ### Added
+      - RubyLang 3.3.9
+      - Discourse 3.4.7
+
+
 ## 3.2.15 2025-06-25 <dave at tiredofit dot ca>
 
    ### Added
